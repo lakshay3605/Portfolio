@@ -1,0 +1,332 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Boot screen */
+  --boot-bg: #020617;
+  --boot-glass-bg: rgba(255, 255, 255, 0.04);
+  --boot-glass-border: rgba(255, 255, 255, 0.1);
+  --boot-glass-shadow: rgba(0, 0, 0, 0.45);
+
+  /* Dark futuristic theme */
+  --background: #020617;
+  --background-secondary: #0f1429;
+  --surface: #151a3a;
+  --surface-secondary: #1a2047;
+
+  /* Primary - Electric Blue */
+  --primary: #00d9ff;
+  --primary-dark: #00a8cc;
+  --primary-light: #33e6ff;
+
+  /* Secondary - Purple Accent */
+  --secondary: #8b5cf6;
+  --secondary-dark: #7c3aed;
+  --secondary-light: #a78bfa;
+
+  /* Accent - Neon Pink */
+  --accent: #ff006e;
+  --accent-dark: #dd0055;
+  --accent-light: #ff4d8f;
+
+  /* Text */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-disabled: #64748b;
+
+  /* Borders */
+  --border-primary: #334155;
+  --border-secondary: #1e293b;
+
+  /* Success, Warning, Error */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(15, 20, 41, 0.6);
+  --glass-border: rgba(0, 217, 255, 0.1);
+  --glass-blur: blur(10px);
+
+  /* Interactive */
+  --hover-surface: rgba(255, 255, 255, 0.04);
+  --focus-ring: var(--primary);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre {
+  font-family: var(--font-mono), monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-light);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--primary);
+  color: var(--background);
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Gradient utilities */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+}
+
+.gradient-subtle {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  opacity: 0.1;
+}
+
+/* Glassmorphism base */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+/* Transitions */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-colors {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.6);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-glow {
+  animation: glow 3s infinite;
+}
+
+/* Boot screen utilities */
+.bg-boot-radial-primary {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 20%,
+    rgba(56, 189, 248, 0.14) 0%,
+    transparent 70%
+  );
+}
+
+.bg-boot-radial-secondary {
+  background: radial-gradient(
+    ellipse 70% 50% at 80% 80%,
+    rgba(99, 102, 241, 0.1) 0%,
+    transparent 65%
+  );
+}
+
+.bg-boot-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.bg-boot-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(2, 6, 23, 0.75) 100%
+  );
+}
+
+.bg-boot-button-shine {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    transparent 100%
+  );
+}
+
+.bg-boot-progress-fill {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 211, 238, 0.85) 0%,
+    rgba(56, 189, 248, 1) 45%,
+    rgba(103, 232, 249, 0.95) 100%
+  );
+}
+
+@keyframes boot-grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 72px 72px;
+  }
+}
+
+.animate-boot-grid-drift {
+  animation: boot-grid-drift 28s linear infinite;
+}
+
+@keyframes boot-radial-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes boot-radial-drift {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(24px, -16px);
+  }
+}
+
+@keyframes boot-particle-float {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 0.2;
+    transform: translate(var(--particle-dx), var(--particle-dy));
+  }
+}
+
+.animate-boot-radial-primary {
+  animation: boot-radial-pulse 12s ease-in-out infinite;
+}
+
+.animate-boot-radial-secondary {
+  animation: boot-radial-drift 16s ease-in-out infinite;
+}
+
+.animate-boot-particle {
+  animation: boot-particle-float var(--particle-duration) ease-in-out infinite;
+  animation-delay: var(--particle-delay);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-boot-grid-drift,
+  .animate-boot-radial-primary,
+  .animate-boot-radial-secondary,
+  .animate-boot-particle {
+    animation: none;
+  }
+}
+
+/* Portfolio hero background */
+.hero-bg-radial {
+  background: radial-gradient(
+    ellipse 75% 55% at 15% 15%,
+    rgba(56, 189, 248, 0.07) 0%,
+    transparent 58%
+  );
+}
+
+.hero-bg-radial-secondary {
+  background: radial-gradient(
+    ellipse 60% 45% at 85% 75%,
+    rgba(99, 102, 241, 0.05) 0%,
+    transparent 55%
+  );
+}
+
+.hero-bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+}
