@@ -1,0 +1,16 @@
+# Instruction layers — loaded in order before knowledge context.
+# Full chat pipeline:
+#   1. system_prompt.md
+#   2. response_style.md
+#   3. conversation_examples (via config/knowledge_layers.yaml)
+#   4. routed knowledge files
+#   5. user message (passed as user_input to the LLM)
+#
+# Add new instruction files here — no ChatService changes required.
+instruction_layers:
+  - system_prompt.md
+  - response_style.md
+  # - interview_mode.md
+  # - few_shot_examples.md
+
+knowledge_wrapper: knowledge_wrapper.md

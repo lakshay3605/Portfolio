@@ -1,0 +1,35 @@
+# Knowledge injection order (after instruction layers in PromptBuilder):
+#
+#   system_prompt.md → response_style.md → training → personality → stories → facts → user message
+
+priority_layers:
+  - category: training
+    wrapper: training_wrapper.md
+    max_examples: 8
+
+# Separate wrappers per knowledge category (future RAG can inject one tier at a time).
+category_wrappers:
+  personality: personality_wrapper.md
+  stories: stories_wrapper.md
+  facts: facts_wrapper.md
+
+# Fallback wrapper for any remaining routed documents.
+general_wrapper: facts_wrapper.md
+
+# Ordered tiers for routed knowledge (after training examples).
+prompt_knowledge_order:
+  - type: category
+    name: personality
+  - type: category
+    name: stories
+  - type: category
+    name: facts
+  - type: remaining
+
+# Categories parsed for training examples — not injected as raw documents.
+training_source_categories:
+  - training
+
+# Files skipped during recursive load (archives, drafts).
+ignore_filename_prefixes:
+  - "_"

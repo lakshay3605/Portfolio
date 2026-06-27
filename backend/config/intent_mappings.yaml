@@ -1,0 +1,202 @@
+routing:
+  min_match_score: 1
+
+fallback:
+  label: General
+  files:
+    - facts/about
+    - personality/biography
+    - personality/philosophy
+
+intents:
+  - name: Introduction
+    files:
+      - facts/about
+      - personality/biography
+    keywords:
+      - who are you
+      - introduce yourself
+      - about yourself
+      - about lakshay
+      - tell me about you
+      - tell me about lakshay
+      - who is lakshay
+      - hello
+      - hi there
+
+  - name: Contact
+    files:
+      - facts/contact
+    keywords:
+      - contact
+      - email
+      - phone
+      - reach you
+      - get in touch
+      - linkedin
+      - github
+      - resume
+      - hire me
+      - collaboration
+
+  - name: Experience
+    files:
+      - facts/experience
+    keywords:
+      - kvgai
+      - your experience
+      - work experience
+      - job
+      - role at
+      - current role
+      - where do you work
+      - employer
+      - ai developer
+      - internship
+      - professional background
+
+  - name: Leadership
+    files:
+      - facts/experience
+      - training/leadership
+    keywords:
+      - leadership
+      - president
+      - think ai
+      - hacksphere
+      - hackwithindia
+      - community leader
+      - hackathon organizer
+      - student community
+      - led the
+
+  - name: Projects
+    files:
+      - facts/projects/business_intelligence
+      - facts/projects/multi_tool_ai
+      - facts/projects/jagrukmahila
+    keywords:
+      - your projects
+      - what have you built
+      - portfolio projects
+      - show me your work
+      - things you built
+      - list your projects
+
+  - name: Project - Business Intelligence Assistant
+    files:
+      - facts/projects/business_intelligence
+    keywords:
+      - business intelligence
+      - bi assistant
+      - intelligence assistant
+      - business data insights
+
+  - name: Project - Multi-Tool AI Agent
+    files:
+      - facts/projects/multi_tool_ai
+    keywords:
+      - multi-tool
+      - multi tool agent
+      - ai agent
+      - tool calling agent
+      - langgraph agent
+
+  - name: Project - jagrukmahila.in
+    files:
+      - facts/projects/jagrukmahila
+    keywords:
+      - jagrukmahila
+      - legal awareness
+      - icssr
+      - legal platform
+
+  - name: Career Advice
+    files:
+      - training/career
+      - personality/opinions
+    keywords:
+      - career advice
+      - career tip
+      - interview tip
+      - how do i get into ai
+      - breaking into ai
+      - job search
+      - hiring you
+      - should i learn
+      - advice for students
+      - early career
+
+  - name: Engineering Philosophy
+    files:
+      - personality/philosophy
+      - personality/values
+    keywords:
+      - philosophy
+      - engineering philosophy
+      - your principles
+      - how you think
+      - product mindset
+      - ownership mindset
+      - beliefs
+      - approach to building
+      - what do you believe
+
+  - name: Skills
+    files:
+      - facts/skills
+    keywords:
+      - skills
+      - tech stack
+      - technologies
+      - what can you do
+      - programming
+      - langgraph
+      - fastapi
+      - llmops
+      - vector database
+      - rag systems
+
+  - name: Stories
+    files:
+      - stories/hackathons
+      - stories/college
+      - stories/failures
+      - stories/funny_moments
+    keywords:
+      - hackathon story
+      - college story
+      - tell me a story
+      - funny moment
+      - childhood
+      - school days
+      - failure
+      - setback
+
+  - name: Personal
+    files:
+      - personality/humor
+      - personality/biography
+      - stories/funny_moments
+    keywords:
+      - daily life
+      - hobbies
+      - goals
+      - favorites
+      - personal life
+      - momos
+      - funny
+      - humor
+
+  - name: Recruiter Interview
+    files:
+      - training/recruiter
+      - training/behavioral
+      - facts/experience
+    keywords:
+      - why should we hire you
+      - tell me about yourself
+      - weakness
+      - strengths
+      - behavioral
+      - interview question

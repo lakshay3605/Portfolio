@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { BETA_MODE } from '@/lib/beta';
 import { BackgroundEffects } from './BackgroundEffects';
 import { GlassPanel } from './GlassPanel';
 import { GlowButton } from './GlowButton';
@@ -156,7 +157,7 @@ export function BootScreen() {
                     >
                       <GlowButton
                         aria-label="Start a conversation with Lakshay's AI Twin"
-                        onClick={() => router.push('/choose')}
+                        onClick={() => router.push(BETA_MODE ? '/ai' : '/choose')}
                       >
                         Start Conversation
                       </GlowButton>
