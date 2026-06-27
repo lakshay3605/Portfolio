@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import logging
+import traceback
+import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
+from postgrest.exceptions import APIError
 from supabase import Client, create_client
 
 logger = logging.getLogger(__name__)
@@ -16,6 +19,52 @@ LONG_CONVERSATION_MIN_TURNS = 6
 
 def _utc_now_iso() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    if value is None:
+        return default
+
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    if value is None:
+        return default
+
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _serialize_value(value: Any) -> Any:
+    if isinstance(value, uuid.UUID):
+        return str(value)
+
+    if isinstance(value, datetime):
+        return value.isoformat()
+
+    if isinstance(value, dict):
+        return {key: _serialize_value(item) for key, item in value.items()}
+
+    if isinstance(value, list):
+        return [_serialize_value(item) for item in value]
+
+    return value
+
+
+def _serialize_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {key: _serialize_value(value) for key, value in row.items()}
+
+
+def _stringify(value: Any) -> str | None:
+    if value is None:
+        return None
+    return str(value)
 
 
 @dataclass(frozen=True)
@@ -150,8 +199,10 @@ class AnalyticsStore:
         session_counts: dict[str, int] = {}
         response_times: list[float] = []
         for row in conversations:
-            session_counts[row["session_id"]] = session_counts.get(row["session_id"], 0) + 1
-            response_times.append(float(row["response_time_ms"]))
+            session_id = str(row.get("session_id") or "").strip()
+            if session_id:
+                session_counts[session_id] = session_counts.get(session_id, 0) + 1
+            response_times.append(_safe_float(row.get("response_time_ms")))
 
         average_conversation_length = (
             sum(session_counts.values()) / len(session_counts) if session_counts else 0.0
@@ -160,17 +211,18 @@ class AnalyticsStore:
             sum(response_times) / len(response_times) if response_times else 0.0
         )
 
-        ratings = [int(row["rating"]) for row in feedback_rows if row.get("rating") is not None]
+        ratings = [_safe_int(row.get("rating")) for row in feedback_rows if row.get("rating") is not None]
+        ratings = [rating for rating in ratings if rating > 0]
         average_rating = sum(ratings) / len(ratings) if ratings else None
 
         recent_conversations = tuple(
             {
-                "session_id": row["session_id"],
-                "timestamp": row["timestamp"],
-                "user_message": row["user_message"],
-                "ai_response": row["ai_response"],
-                "response_time_ms": row["response_time_ms"],
-                "conversation_number": row["conversation_number"],
+                "session_id": str(row.get("session_id") or ""),
+                "timestamp": _stringify(row.get("timestamp")),
+                "user_message": str(row.get("user_message") or ""),
+                "ai_response": str(row.get("ai_response") or ""),
+                "response_time_ms": _safe_float(row.get("response_time_ms")),
+                "conversation_number": _safe_int(row.get("conversation_number")),
             }
             for row in conversations[:recent_limit]
         )
@@ -179,10 +231,10 @@ class AnalyticsStore:
 
         recent_feedback = tuple(
             {
-                "session_id": row["session_id"],
-                "rating": row["rating"],
+                "session_id": str(row.get("session_id") or ""),
+                "rating": _safe_int(row.get("rating")),
                 "written_feedback": row.get("written_feedback"),
-                "timestamp": row["timestamp"],
+                "timestamp": _stringify(row.get("timestamp")),
             }
             for row in feedback_rows[:recent_limit]
         )
@@ -202,19 +254,19 @@ class AnalyticsStore:
 
     def export_table(self, table_name: str) -> list[dict[str, Any]]:
         if table_name == "conversations":
-            return self._select_all("conversations", "*", order="timestamp.asc")
-        if table_name == "feedback":
-            return self._select_all("feedback", "*", order="timestamp.asc")
-        if table_name == "unknown_questions":
-            return self._select_all("unknown_questions", "*", order="timestamp.asc")
-        if table_name == "questions":
-            return [
+            rows = self._select_all("conversations", "*", order="timestamp.asc")
+        elif table_name == "feedback":
+            rows = self._select_all("feedback", "*", order="timestamp.asc")
+        elif table_name == "unknown_questions":
+            rows = self._select_all("unknown_questions", "*", order="timestamp.asc")
+        elif table_name == "questions":
+            rows = [
                 {
-                    "timestamp": row["timestamp"],
-                    "session_id": row["session_id"],
-                    "question": row["user_message"],
-                    "question_length": len(row["user_message"]),
-                    "response_time_ms": row["response_time_ms"],
+                    "timestamp": _stringify(row.get("timestamp")),
+                    "session_id": str(row.get("session_id") or ""),
+                    "question": str(row.get("user_message") or ""),
+                    "question_length": len(str(row.get("user_message") or "")),
+                    "response_time_ms": _safe_float(row.get("response_time_ms")),
                 }
                 for row in self._select_all(
                     "conversations",
@@ -222,26 +274,30 @@ class AnalyticsStore:
                     order="timestamp.asc",
                 )
             ]
-        if table_name == "performance_metrics":
-            return [
+            return rows
+        elif table_name == "performance_metrics":
+            rows = [
                 {
-                    "session_id": row["session_id"],
-                    "timestamp": row["timestamp"],
-                    "response_time_ms": row["response_time_ms"],
-                    "build_instructions_ms": row.get("build_instructions_ms"),
-                    "llm_ms": row.get("llm_ms"),
-                    "tokens_generated": row.get("tokens_generated"),
+                    "session_id": str(row.get("session_id") or ""),
+                    "timestamp": _stringify(row.get("timestamp")),
+                    "response_time_ms": _safe_float(row.get("response_time_ms")),
+                    "build_instructions_ms": _safe_float(row.get("build_instructions_ms")),
+                    "llm_ms": _safe_float(row.get("llm_ms")),
+                    "tokens_generated": _safe_int(row.get("tokens_generated")),
                     "documents_retrieved": len(row.get("knowledge_docs_used") or []),
-                    "latency_ms": row["response_time_ms"],
+                    "latency_ms": _safe_float(row.get("response_time_ms")),
                     "intent": row.get("intent"),
-                    "confidence": row.get("confidence"),
-                    "conversation_number": row.get("conversation_number"),
+                    "confidence": _safe_float(row.get("confidence")),
+                    "conversation_number": _safe_int(row.get("conversation_number")),
                     "knowledge_docs_used": row.get("knowledge_docs_used") or [],
                 }
                 for row in self._select_all("conversations", "*", order="timestamp.asc")
             ]
+            return rows
+        else:
+            raise ValueError(f"Unsupported export table: {table_name}")
 
-        raise ValueError(f"Unsupported export table: {table_name}")
+        return [_serialize_row(row) for row in rows]
 
     def top_questions(self, *, limit: int = 20) -> list[dict[str, Any]]:
         conversations = self._select_all("conversations", "user_message", order="timestamp.desc")
@@ -310,18 +366,19 @@ class AnalyticsStore:
     ) -> dict[str, Any]:
         sorted_turns = sorted(
             turn_rows,
-            key=lambda row: (int(row["conversation_number"]), row["timestamp"]),
+            key=lambda row: (_safe_int(row.get("conversation_number")), str(row.get("timestamp") or "")),
         )
         unknown_by_question = {row["question"]: row for row in unknown_rows}
 
         turns: list[dict[str, Any]] = []
         for turn_row in sorted_turns:
-            turn_number = int(turn_row["conversation_number"])
+            turn_number = _safe_int(turn_row.get("conversation_number"))
             knowledge_docs = self._parse_docs(turn_row.get("knowledge_docs_used"))
             intent = turn_row.get("intent") or "Unknown"
-            confidence = float(turn_row.get("confidence") or 0.0)
-            response_time_ms = float(turn_row["response_time_ms"])
-            flagged_unknown = turn_row["user_message"] in unknown_by_question
+            confidence = _safe_float(turn_row.get("confidence"))
+            response_time_ms = _safe_float(turn_row.get("response_time_ms"))
+            user_message = str(turn_row.get("user_message") or "")
+            flagged_unknown = user_message in unknown_by_question
 
             is_low_confidence = (
                 confidence < LOW_CONFIDENCE_THRESHOLD
@@ -329,8 +386,8 @@ class AnalyticsStore:
                 or len(knowledge_docs) <= 1
             )
             if flagged_unknown and confidence == 0.0:
-                unknown_row = unknown_by_question[turn_row["user_message"]]
-                confidence = float(unknown_row["confidence"])
+                unknown_row = unknown_by_question[user_message]
+                confidence = _safe_float(unknown_row.get("confidence"))
                 if not knowledge_docs:
                     knowledge_docs = self._parse_docs(unknown_row.get("knowledge_docs_used"))
                 is_low_confidence = True
@@ -338,9 +395,9 @@ class AnalyticsStore:
             turns.append(
                 {
                     "conversation_number": turn_number,
-                    "timestamp": turn_row["timestamp"],
-                    "user_message": turn_row["user_message"],
-                    "ai_response": turn_row["ai_response"],
+                    "timestamp": _stringify(turn_row.get("timestamp")),
+                    "user_message": user_message,
+                    "ai_response": str(turn_row.get("ai_response") or ""),
                     "intent": intent,
                     "confidence": round(confidence, 3),
                     "response_time_ms": round(response_time_ms, 2),
@@ -353,9 +410,9 @@ class AnalyticsStore:
         timestamps = [turn["timestamp"] for turn in sorted_turns]
         feedback = [
             {
-                "rating": row["rating"],
+                "rating": _safe_int(row.get("rating")),
                 "written_feedback": row.get("written_feedback"),
-                "timestamp": row["timestamp"],
+                "timestamp": _stringify(row.get("timestamp")),
             }
             for row in feedback_rows
         ]
@@ -368,7 +425,7 @@ class AnalyticsStore:
             "has_low_confidence": any(turn["is_low_confidence"] for turn in turns),
             "has_unknown_questions": bool(unknown_rows),
             "has_negative_feedback": any(
-                int(row["rating"]) <= NEGATIVE_FEEDBACK_MAX_RATING for row in feedback_rows
+                _safe_int(row.get("rating")) <= NEGATIVE_FEEDBACK_MAX_RATING for row in feedback_rows
             ),
             "is_long_conversation": len(turns) >= LONG_CONVERSATION_MIN_TURNS,
             "feedback": feedback,
@@ -389,25 +446,53 @@ class AnalyticsStore:
         *,
         order: str,
     ) -> list[dict[str, Any]]:
-        column, direction = order.split(".")
+        column, direction = order.split(".", 1)
         descending = direction.lower() == "desc"
         rows: list[dict[str, Any]] = []
         page_size = 1000
         offset = 0
 
-        while True:
-            response = (
-                self._client.table(table_name)
-                .select(columns)
-                .order(column, desc=descending)
-                .range(offset, offset + page_size - 1)
-                .execute()
+        try:
+            while True:
+                response = (
+                    self._client.table(table_name)
+                    .select(columns)
+                    .order(column, desc=descending)
+                    .range(offset, offset + page_size - 1)
+                    .execute()
+                )
+                batch = response.data or []
+                rows.extend(batch)
+                if len(batch) < page_size:
+                    break
+                offset += page_size
+        except APIError as exc:
+            print(
+                f"Supabase select failed table={table_name} columns={columns} order={order} "
+                f"code={getattr(exc, 'code', None)} message={exc}"
             )
-            batch = response.data or []
-            rows.extend(batch)
-            if len(batch) < page_size:
-                break
-            offset += page_size
+            print(traceback.format_exc())
+            logger.exception(
+                "Supabase select failed table=%s columns=%s order=%s code=%s message=%s",
+                table_name,
+                columns,
+                order,
+                getattr(exc, "code", None),
+                exc,
+            )
+            return []
+        except Exception:
+            print(
+                f"Unexpected analytics query failure table={table_name} columns={columns} order={order}"
+            )
+            print(traceback.format_exc())
+            logger.exception(
+                "Unexpected analytics query failure table=%s columns=%s order=%s",
+                table_name,
+                columns,
+                order,
+            )
+            return []
 
         return rows
 
