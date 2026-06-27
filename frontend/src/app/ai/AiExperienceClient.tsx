@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { AiConversation } from '@/components/ai-chat';
+import { BETA_MODE } from '@/lib/beta';
 import { CinematicFallbackIntro } from '@/components/ai-experience/cinematic/CinematicFallbackIntro';
 import { useCinematicTimeline } from '@/components/ai-experience/introduction/useCinematicTimeline';
 
@@ -61,7 +62,7 @@ class AiIntroErrorBoundary extends Component<
 
 export function AiExperienceClient() {
   const prefersReducedMotion = useReducedMotion();
-  const [showConversation, setShowConversation] = useState(false);
+  const [showConversation, setShowConversation] = useState(BETA_MODE);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -69,7 +70,7 @@ export function AiExperienceClient() {
     }
   }, [prefersReducedMotion]);
 
-  if (showConversation) {
+  if (BETA_MODE || showConversation) {
     return (
       <AiIntroErrorBoundary>
         <AiConversation />

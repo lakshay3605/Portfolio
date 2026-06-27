@@ -50,4 +50,4 @@ export const BETA_IMPROVEMENT_FOOTER =
 
 export const INPUT_PLACEHOLDER = 'Ask Lakshay anything...';
 
-export const AI_API_BASE_URL = process.env.NEXT_PUBLIC_AI_API_URL ?? '';
+export { AI_API_BASE_URL } from '@/lib/api-url';
