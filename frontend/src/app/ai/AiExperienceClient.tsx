@@ -60,9 +60,9 @@ class AiIntroErrorBoundary extends Component<
   }
 }
 
-export function AiExperienceClient() {
+function AiExperienceWithIntro() {
   const prefersReducedMotion = useReducedMotion();
-  const [showConversation, setShowConversation] = useState(BETA_MODE);
+  const [showConversation, setShowConversation] = useState(false);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -70,7 +70,15 @@ export function AiExperienceClient() {
     }
   }, [prefersReducedMotion]);
 
-  if (BETA_MODE || showConversation) {
+  if (showConversation) {
+    return <AiConversation />;
+  }
+
+  return <AiCinematicIntro onComplete={() => setShowConversation(true)} />;
+}
+
+export function AiExperienceClient() {
+  if (BETA_MODE) {
     return (
       <AiIntroErrorBoundary>
         <AiConversation />
@@ -80,7 +88,7 @@ export function AiExperienceClient() {
 
   return (
     <AiIntroErrorBoundary>
-      <AiCinematicIntro onComplete={() => setShowConversation(true)} />
+      <AiExperienceWithIntro />
     </AiIntroErrorBoundary>
   );
 }

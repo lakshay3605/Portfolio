@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { BootScreen } from '@/components/boot/BootScreen';
-import { BETA_MODE } from '@/lib/beta';
+import { isBetaModeEnabled } from '@/lib/beta.server';
 
 export default function Page() {
-  if (BETA_MODE) {
+  if (isBetaModeEnabled()) {
     redirect('/ai');
   }
 

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { parseBetaModeFlag } from '@/lib/beta';
 
-const BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE !== 'false';
+const BETA_MODE = parseBetaModeFlag(
+  process.env.BETA_MODE,
+  process.env.NEXT_PUBLIC_BETA_MODE
+);
 
 export function middleware(request: NextRequest) {
   if (!BETA_MODE) {

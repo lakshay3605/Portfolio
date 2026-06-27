@@ -1,6 +1,35 @@
+const DISABLED = new Set(['false', '0', 'no', 'off']);
+const ENABLED = new Set(['true', '1', 'yes', 'on']);
+
 /**
- * Beta mode hides the traditional portfolio, routes visitors to AI chat,
- * and skips the boot screen and avatar introduction.
+ * Resolve beta mode from one or more env values.
+ * Defaults to enabled unless an explicit "false" value is found.
+ */
+export function parseBetaModeFlag(...values: Array<string | undefined>): boolean {
+  for (const value of values) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) {
+      continue;
+    }
+
+    if (DISABLED.has(normalized)) {
+      return false;
+    }
+
+    if (ENABLED.has(normalized)) {
+      return true;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Client/build-time beta flag (from NEXT_PUBLIC_BETA_MODE).
  * Set NEXT_PUBLIC_BETA_MODE=false to re-enable the full portfolio experience.
  */
-export const BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE !== 'false';
+export const BETA_MODE = parseBetaModeFlag(process.env.NEXT_PUBLIC_BETA_MODE);
