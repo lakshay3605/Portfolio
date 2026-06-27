@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
+import traceback
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,6 +14,8 @@ from app.schemas.chat import ChatRequest, ChatResponse, FeedbackRequest
 from app.services.analytics_store import AnalyticsStore
 from app.services.chat_metadata import ChatTurnMetadata
 from app.services.chat_service import ChatService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -32,7 +36,12 @@ def _persist_chat_turn(
     llm_ms: float,
     tokens_generated: int,
 ) -> None:
-    analytics_store.log_conversation_turn(
+    print(
+        "persist_chat_turn starting "
+        f"session_id={session_id} conversation_number={conversation_number} "
+        f"response_chars={len(response_text)}"
+    )
+    analytics_store.save_conversation(
         session_id=session_id,
         user_message=message,
         ai_response=response_text,
@@ -53,6 +62,10 @@ def _persist_chat_turn(
             confidence=metadata.confidence,
             knowledge_docs_used=list(metadata.knowledge_docs_used),
         )
+    print(
+        "persist_chat_turn completed "
+        f"session_id={session_id} conversation_number={conversation_number}"
+    )
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -72,6 +85,7 @@ async def chat(
     session_id = _resolve_session_id(payload.session_id)
     conversation_number = payload.conversation_number or 1
     started_at = time.perf_counter()
+    response_text = ""
 
     try:
         instructions, metadata = chat_service.prepare_chat(message)
@@ -106,6 +120,16 @@ async def chat(
             detail=str(exc),
         ) from exc
     except Exception as exc:
+        print(
+            "chat persistence failed "
+            f"session_id={session_id} conversation_number={conversation_number}"
+        )
+        print(traceback.format_exc())
+        logger.exception(
+            "chat persistence failed session_id=%s conversation_number=%s",
+            session_id,
+            conversation_number,
+        )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to generate a response. Please try again.",
@@ -134,6 +158,11 @@ async def chat_stream(
     async def event_generator():
         started_at = time.perf_counter()
         chunks: list[str] = []
+        metadata: ChatTurnMetadata | None = None
+        response_text = ""
+        llm_ms = 0.0
+        response_time_ms = 0.0
+        tokens_generated = 0
 
         try:
             instructions, metadata = chat_service.prepare_chat(message)
@@ -150,7 +179,32 @@ async def chat_stream(
             llm_ms = (time.perf_counter() - llm_started_at) * 1000
             response_time_ms = (time.perf_counter() - started_at) * 1000
             tokens_generated = max(1, len(response_text) // 4)
+        except RuntimeError as exc:
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+            return
+        except Exception:
+            print(
+                "chat/stream generation failed "
+                f"session_id={session_id} conversation_number={conversation_number}"
+            )
+            print(traceback.format_exc())
+            logger.exception(
+                "chat/stream generation failed session_id=%s conversation_number=%s",
+                session_id,
+                conversation_number,
+            )
+            yield f"data: {json.dumps({'error': 'Failed to generate a response.'})}\n\n"
+            return
 
+        if metadata is None:
+            print(
+                "chat/stream persistence skipped because metadata is missing "
+                f"session_id={session_id} conversation_number={conversation_number}"
+            )
+            yield f"data: {json.dumps({'error': 'Failed to save conversation analytics.'})}\n\n"
+            return
+
+        try:
             _persist_chat_turn(
                 analytics_store,
                 session_id=session_id,
@@ -162,22 +216,31 @@ async def chat_stream(
                 llm_ms=llm_ms,
                 tokens_generated=tokens_generated,
             )
-
-            meta_payload = {
-                **metadata.to_dict(),
-                "response_time_ms": round(response_time_ms, 2),
-                "llm_ms": round(llm_ms, 2),
-                "tokens_generated": tokens_generated,
-                "documents_retrieved": len(metadata.knowledge_docs_used),
-                "session_id": session_id,
-                "conversation_number": conversation_number,
-            }
-            yield f"data: {json.dumps({'meta': meta_payload})}\n\n"
-            yield "data: [DONE]\n\n"
-        except RuntimeError as exc:
-            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
         except Exception:
-            yield f"data: {json.dumps({'error': 'Failed to generate a response.'})}\n\n"
+            print(
+                "chat/stream persistence failed "
+                f"session_id={session_id} conversation_number={conversation_number}"
+            )
+            print(traceback.format_exc())
+            logger.exception(
+                "chat/stream persistence failed session_id=%s conversation_number=%s",
+                session_id,
+                conversation_number,
+            )
+            yield f"data: {json.dumps({'error': 'Failed to save conversation analytics.'})}\n\n"
+            return
+
+        meta_payload = {
+            **metadata.to_dict(),
+            "response_time_ms": round(response_time_ms, 2),
+            "llm_ms": round(llm_ms, 2),
+            "tokens_generated": tokens_generated,
+            "documents_retrieved": len(metadata.knowledge_docs_used),
+            "session_id": session_id,
+            "conversation_number": conversation_number,
+        }
+        yield f"data: {json.dumps({'meta': meta_payload})}\n\n"
+        yield "data: [DONE]\n\n"
 
     return StreamingResponse(
         event_generator(),

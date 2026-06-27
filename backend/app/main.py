@@ -48,6 +48,7 @@ async def lifespan(app: FastAPI):
             raise RuntimeError(
                 f"Missing required production environment variables: {', '.join(missing)}"
             )
+        get_analytics_store.cache_clear()
         get_analytics_store()
 
     print("CORS allow_origins =", settings.cors_origin_list)

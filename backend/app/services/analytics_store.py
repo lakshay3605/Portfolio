@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import traceback
 import uuid
 from dataclasses import dataclass
@@ -67,6 +68,24 @@ def _stringify(value: Any) -> str | None:
     return str(value)
 
 
+def _json_number(value: float | int | None) -> float | int | None:
+    if value is None:
+        return None
+
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+
+    if math.isnan(numeric) or math.isinf(numeric):
+        return None
+
+    if isinstance(value, int) and numeric.is_integer():
+        return int(numeric)
+
+    return numeric
+
+
 @dataclass(frozen=True)
 class AdminStats:
     total_conversations: int
@@ -90,9 +109,47 @@ class AnalyticsStore:
                 "Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
             )
 
-        self._client: Client = create_client(supabase_url.strip(), supabase_key.strip())
+        url = supabase_url.strip()
+        key = supabase_key.strip()
+        self._client: Client = create_client(url, key)
+        print(
+            "AnalyticsStore initialized "
+            f"supabase_url={url} "
+            f"key_source=SUPABASE_SERVICE_ROLE_KEY "
+            f"key_prefix={key[:12]}... "
+            f"key_length={len(key)}"
+        )
 
     def log_conversation_turn(
+        self,
+        *,
+        session_id: str,
+        user_message: str,
+        ai_response: str,
+        response_time_ms: float,
+        conversation_number: int,
+        intent: str | None = None,
+        confidence: float | None = None,
+        knowledge_docs_used: list[str] | None = None,
+        build_instructions_ms: float | None = None,
+        llm_ms: float | None = None,
+        tokens_generated: int | None = None,
+    ) -> None:
+        self.save_conversation(
+            session_id=session_id,
+            user_message=user_message,
+            ai_response=ai_response,
+            response_time_ms=response_time_ms,
+            conversation_number=conversation_number,
+            intent=intent,
+            confidence=confidence,
+            knowledge_docs_used=knowledge_docs_used,
+            build_instructions_ms=build_instructions_ms,
+            llm_ms=llm_ms,
+            tokens_generated=tokens_generated,
+        )
+
+    def save_conversation(
         self,
         *,
         session_id: str,
@@ -112,16 +169,24 @@ class AnalyticsStore:
             "timestamp": _utc_now_iso(),
             "user_message": user_message,
             "ai_response": ai_response,
-            "response_time_ms": response_time_ms,
+            "response_time_ms": _json_number(response_time_ms) or 0.0,
             "conversation_number": conversation_number,
             "intent": intent,
-            "confidence": confidence,
+            "confidence": _json_number(confidence),
             "knowledge_docs_used": knowledge_docs_used or [],
-            "build_instructions_ms": build_instructions_ms,
-            "llm_ms": llm_ms,
-            "tokens_generated": tokens_generated,
+            "build_instructions_ms": _json_number(build_instructions_ms),
+            "llm_ms": _json_number(llm_ms),
+            "tokens_generated": _json_number(tokens_generated),
         }
+        print(
+            "save_conversation starting "
+            f"table=conversations session_id={session_id} conversation_number={conversation_number}"
+        )
         self._insert("conversations", payload)
+        print(
+            "save_conversation completed "
+            f"table=conversations session_id={session_id} conversation_number={conversation_number}"
+        )
 
     def log_performance(
         self,
@@ -433,10 +498,45 @@ class AnalyticsStore:
         }
 
     def _insert(self, table_name: str, payload: dict[str, Any]) -> None:
+        session_id = payload.get("session_id")
+        print(
+            f"Supabase insert starting table={table_name} session_id={session_id} "
+            f"payload_keys={list(payload.keys())}"
+        )
         try:
-            self._client.table(table_name).insert(payload).execute()
+            response = self._client.table(table_name).insert(payload).execute()
+            print(
+                f"Supabase insert success table={table_name} session_id={session_id} "
+                f"response_data={response.data!r} count={response.count!r}"
+            )
+            logger.info(
+                "Supabase insert success table=%s session_id=%s count=%s",
+                table_name,
+                session_id,
+                response.count,
+            )
+        except APIError as exc:
+            print(
+                f"Supabase insert failed table={table_name} session_id={session_id} "
+                f"code={getattr(exc, 'code', None)!r} message={exc!r} details={getattr(exc, 'details', None)!r}"
+            )
+            print(traceback.format_exc())
+            logger.exception(
+                "Supabase insert failed table=%s session_id=%s code=%s message=%s",
+                table_name,
+                session_id,
+                getattr(exc, "code", None),
+                exc,
+            )
+            raise
         except Exception:
-            logger.exception("Failed to insert analytics row into %s", table_name)
+            print(f"Supabase insert failed table={table_name} session_id={session_id}")
+            print(traceback.format_exc())
+            logger.exception(
+                "Supabase insert failed table=%s session_id=%s",
+                table_name,
+                session_id,
+            )
             raise
 
     def _select_all(
