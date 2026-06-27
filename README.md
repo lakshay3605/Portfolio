@@ -1,60 +1,89 @@
-# LakshayOS
+# Lakshay.ai
 
-LakshayOS is an immersive AI-powered portfolio platform where recruiters interact with an AI version of Lakshay Mahajan instead of browsing a conventional website.
+Monorepo for the Lakshay.ai public beta — a conversational AI portfolio with a Next.js frontend and FastAPI backend.
 
-## Vision
+## Repository structure
 
-Build a production-grade experience that blends conversational AI, generative audio, and interactive storytelling to present the portfolio as a living digital persona.
+```
+.
+├── frontend/          # Next.js 15 app (deploy to Vercel)
+├── backend/           # FastAPI API (deploy to Railway)
+├── docs/              # Product and architecture notes
+└── README.md
+```
 
-## Architecture
+## Local development
 
-The project follows a modern frontend-first architecture with a future-ready backend design.
+### Prerequisites
 
-- Next.js 15 App Router for UI composition and page routing
-- TypeScript for end-to-end type safety
-- Tailwind CSS plus shadcn/ui for scalable design and reusable UI primitives
-- Framer Motion and GSAP for motion, entrance animations, and immersive transitions
-- React Three Fiber for interactive 3D narrative scenes
-- Supabase for auth, user data, and content persistence
-- FastAPI reserved for future backend microservices
-- Qdrant reserved for future vector search and RAG pipelines
-- OpenAI API for conversational intelligence
-- ElevenLabs for voice synthesis and immersive audio rendering
+- Node.js 20+
+- Python 3.11+
+- Supabase project (for analytics)
+- Gemini API key
 
-## Tech Stack
+### Frontend
 
-- Frontend: Next.js 15, React, TypeScript
-- Styling: Tailwind CSS, shadcn/ui
-- Animation: Framer Motion, GSAP
-- 3D: React Three Fiber
-- Data: Supabase
-- Backend (future): FastAPI
-- RAG / Vector DB (future): Qdrant
-- AI: OpenAI, ElevenLabs
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-## Folder Structure
+Runs at [http://localhost:3000](http://localhost:3000).
 
-- `src/app` — application routes, layout, metadata, and page composition
-- `src/components` — reusable UI and domain components
-- `src/components/ui` — shared design-system primitives and shadcn-inspired components
-- `src/lib` — low-level SDK wrappers, API clients, feature utilities, and environment helpers
-- `docs` — product requirements, architecture, roadmap, features, design system, user journey, and tech stack
-- `.github` — repository-level automation and contributor guidance
+### Backend
 
-## Development Workflow
+```bash
+cd backend
+cp .env.example .env
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8090
+```
 
-1. Install dependencies: `npm install`
-2. Run local development: `npm run dev`
-3. Typecheck: `npm run typecheck`
-4. Lint: `npm run lint`
-5. Format: `npm run format`
+Runs at [http://127.0.0.1:8090](http://127.0.0.1:8090).
 
-> This repository is intentionally initialized as scaffolding and documentation only. UI implementation and backend services are planned for later phases.
+### From repository root
 
-## Future Roadmap
+```bash
+npm run dev              # frontend only
+npm run dev:backend      # backend only
+npm run build            # production frontend build
+```
 
-1. Define data contracts and API surface for FastAPI backend
-2. Build vector retrieval pipeline with Qdrant for RAG scenarios
-3. Implement OpenAI conversational experience with stateful memory
-4. Add ElevenLabs voice output for spoken AI responses
-5. Develop 3D portfolio interactions with React Three Fiber
+## Deployment
+
+| Service  | Platform | Root directory |
+|----------|----------|----------------|
+| Frontend | Vercel   | `frontend`     |
+| Backend  | Railway  | `backend`      |
+| Database | Supabase | —              |
+
+### Vercel (frontend)
+
+Set **Root Directory** to `frontend` in project settings. Environment variables:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_AI_API_URL`
+- `NEXT_PUBLIC_BETA_MODE`
+
+### Railway (backend)
+
+Set **Root Directory** to `backend`. Environment variables:
+
+- `APP_ENV=production`
+- `DEBUG=false`
+- `GEMINI_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CORS_ORIGINS` (your Vercel domain)
+
+Apply the Supabase schema from `backend/supabase/schema.sql` before launch.
+
+## Tech stack
+
+- **Frontend:** Next.js 15, React, TypeScript, Tailwind CSS, Framer Motion
+- **Backend:** FastAPI, Google Gemini, Supabase (analytics)
+- **Deploy:** Vercel + Railway + Supabase

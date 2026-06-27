@@ -21,14 +21,13 @@ ENV_FILE_KEYS = (
 def _read_env_file_values() -> dict[str, str]:
     merged: dict[str, str] = {}
 
-    for relative in (".env", "../.env"):
-        path = (BACKEND_DIR / relative).resolve()
-        if not path.is_file():
-            continue
+    path = (BACKEND_DIR / ".env").resolve()
+    if not path.is_file():
+        return merged
 
-        for key, value in dotenv_values(path).items():
-            if value is not None and str(value).strip():
-                merged[key] = str(value).strip()
+    for key, value in dotenv_values(path).items():
+        if value is not None and str(value).strip():
+            merged[key] = str(value).strip()
 
     return merged
 
@@ -37,7 +36,7 @@ class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
