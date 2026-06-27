@@ -50,6 +50,8 @@ async def lifespan(app: FastAPI):
             )
         get_analytics_store()
 
+    print("CORS allow_origins =", settings.cors_origin_list)
+
     app.state.settings = settings
     yield
 
