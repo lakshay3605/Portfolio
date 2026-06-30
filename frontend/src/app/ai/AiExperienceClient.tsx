@@ -3,7 +3,6 @@
 import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { AiConversation } from '@/components/ai-chat';
-import { BETA_MODE } from '@/lib/beta';
 import { CinematicFallbackIntro } from '@/components/ai-experience/cinematic/CinematicFallbackIntro';
 import { useCinematicTimeline } from '@/components/ai-experience/introduction/useCinematicTimeline';
 
@@ -78,14 +77,6 @@ function AiExperienceWithIntro() {
 }
 
 export function AiExperienceClient() {
-  if (BETA_MODE) {
-    return (
-      <AiIntroErrorBoundary>
-        <AiConversation />
-      </AiIntroErrorBoundary>
-    );
-  }
-
   return (
     <AiIntroErrorBoundary>
       <AiExperienceWithIntro />

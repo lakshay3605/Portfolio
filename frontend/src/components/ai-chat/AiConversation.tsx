@@ -38,7 +38,7 @@ export function AiConversation({ className }: AiConversationProps) {
 
   return (
     <motion.div
-      initial={BETA_MODE ? false : { opacity: 0 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
@@ -80,20 +80,18 @@ export function AiConversation({ className }: AiConversationProps) {
 
         <div className="mx-auto mt-3 flex max-w-3xl flex-col gap-2 text-[11px] text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
           <span className="text-center sm:text-left">{BETA_IMPROVEMENT_FOOTER}</span>
-          <span className="hidden text-right sm:inline">
-            {hasMessages ? 'Conversation saved for beta analytics' : 'Start with a suggested question'}
-          </span>
-          {!BETA_MODE ? (
-            <Link
-              href="/portfolio"
-              className="text-center transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:ml-auto sm:text-right"
-            >
-              Browse traditional portfolio
-            </Link>
+          {!hasMessages ? (
+            <span className="hidden text-right sm:inline">Start with a suggested question</span>
           ) : null}
+          <Link
+            href="/portfolio"
+            className="text-center transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:ml-auto sm:text-right"
+          >
+            Browse traditional portfolio
+          </Link>
         </div>
       </footer>
     </motion.div>
   );
 }
-
+

@@ -1,33 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { parseBetaModeFlag } from '@/lib/beta';
 
-const BETA_MODE = parseBetaModeFlag(
-  process.env.BETA_MODE,
-  process.env.NEXT_PUBLIC_BETA_MODE
-);
-
-export function middleware(request: NextRequest) {
-  if (!BETA_MODE) {
-    return NextResponse.next();
-  }
-
-  const { pathname } = request.nextUrl;
-
-  if (
-    pathname.startsWith('/ai') ||
-    pathname.startsWith('/mission-control') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.')
-  ) {
-    return NextResponse.next();
-  }
-
-  if (pathname === '/' || pathname.startsWith('/choose') || pathname.startsWith('/portfolio')) {
-    return NextResponse.redirect(new URL('/ai', request.url));
-  }
-
+export function middleware(_request: NextRequest) {
   return NextResponse.next();
 }
 
