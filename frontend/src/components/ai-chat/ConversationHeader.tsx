@@ -1,13 +1,20 @@
 'use client';
 
+import { Minimize2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/cn';
 
 export interface ConversationHeaderProps {
   className?: string;
+  subtitle?: string;
+  onClose?: () => void;
 }
 
-export function ConversationHeader({ className }: ConversationHeaderProps) {
+export function ConversationHeader({
+  className,
+  subtitle = 'AI Twin · Interview mode',
+  onClose
+}: ConversationHeaderProps) {
   return (
     <header
       className={cn(
@@ -33,10 +40,19 @@ export function ConversationHeader({ className }: ConversationHeaderProps) {
           >
             Lakshay Mahajan
           </motion.h1>
-          <p className="truncate text-xs text-text-tertiary sm:text-sm">
-            AI Twin · Interview mode
-          </p>
+          <p className="truncate text-xs text-text-tertiary sm:text-sm">{subtitle}</p>
         </div>
+
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Minimize assistant"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <Minimize2 className="h-4 w-4" aria-hidden="true" />
+          </button>
+        ) : null}
 
         <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,217,255,0.8)]" />

@@ -26,4 +26,5 @@ export interface ProjectData {
   layout: ProjectLayout;
   liveUrl?: string;
   githubUrl?: string;
+  aiExplainPrompt: string;
 }

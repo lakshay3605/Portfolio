@@ -156,7 +156,7 @@ export function BootScreen() {
                     >
                       <GlowButton
                         aria-label="Start a conversation with Lakshay's AI Twin"
-                        onClick={() => router.push('/choose')}
+                        onClick={() => router.push('/portfolio?ai=open')}
                       >
                         Start Conversation
                       </GlowButton>

@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Menu, Sparkles, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Menu, X } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { cn } from '@/lib/cn';
 
@@ -73,15 +72,6 @@ export function Navigation() {
             ))}
           </ul>
 
-          <div className="hidden items-center gap-3 lg:flex">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/ai" className="inline-flex items-center gap-2">
-                Ask AI
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
-
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-primary text-text-primary transition-colors hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
@@ -116,18 +106,6 @@ export function Navigation() {
               </li>
             ))}
           </ul>
-          <div className="mt-content-md border-t border-border-primary/60 pt-content-md">
-            <Button asChild variant="outline" className="w-full">
-              <Link
-                href="/ai"
-                className="inline-flex items-center justify-center gap-2"
-                onClick={() => setMobileOpen(false)}
-              >
-                Ask AI
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
         </Container>
       </div>
     </header>

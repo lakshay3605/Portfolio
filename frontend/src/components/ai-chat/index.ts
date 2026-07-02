@@ -1,4 +1,11 @@
 export { AiConversation } from './AiConversation';
+export { AiTwinModal, AiTwinModal as FloatingAssistant } from './AiTwinModal';
+export { AiTwinLauncher } from './AiTwinLauncher';
+export { AiTwinChatProvider, useAiTwinChat } from './AiTwinChatProvider';
+export {
+  FloatingAssistantProvider,
+  useFloatingAssistant
+} from './FloatingAssistantProvider';
 export { ChatInput } from './ChatInput';
 export { ConversationHeader } from './ConversationHeader';
 export { SuggestedQuestions } from './SuggestedQuestions';

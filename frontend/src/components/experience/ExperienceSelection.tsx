@@ -12,7 +12,7 @@ const EXPERIENCES = [
       'Have a conversation with my AI twin. Ask about projects, experience, leadership, technical decisions, and interview questions.',
     estimatedTime: '10–15 minutes',
     ctaLabel: 'Enter AI Experience',
-    href: '/ai',
+    href: '/portfolio?ai=open',
     accent: 'cyan' as const
   },
   {

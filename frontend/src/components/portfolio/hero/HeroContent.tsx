@@ -1,19 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
+import { useFloatingAssistant } from '@/components/ai-chat/FloatingAssistantProvider';
 import { heroReveal, staggerContainer } from '@/lib/motion';
 import { cn } from '@/lib/cn';
-import {
-  HERO_DESCRIPTION,
-  HERO_HEADLINE,
-  HERO_OVERLINE
-} from './constants';
+import { HERO_DESCRIPTION, HERO_GREETING, HERO_HEADLINE } from './constants';
 import { AchievementPills } from './AchievementPills';
-import { RotatingStatement } from './RotatingStatement';
 
 export interface HeroContentProps {
   className?: string;
@@ -21,6 +17,7 @@ export interface HeroContentProps {
 
 export function HeroContent({ className }: HeroContentProps) {
   const prefersReducedMotion = useReducedMotion();
+  const { open } = useFloatingAssistant();
 
   return (
     <motion.div
@@ -30,19 +27,15 @@ export function HeroContent({ className }: HeroContentProps) {
       variants={staggerContainer}
     >
       <motion.div variants={prefersReducedMotion ? undefined : heroReveal}>
-        <Typography variant="overline">{HERO_OVERLINE}</Typography>
+        <Typography variant="overline" className="text-text-secondary">
+          {HERO_GREETING}
+        </Typography>
       </motion.div>
 
       <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md">
-        <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl md:text-6xl md:leading-[1.06] lg:text-[3.5rem]">
-          {HERO_HEADLINE[0]}
-          <br />
-          {HERO_HEADLINE[1]}
+        <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-text-primary sm:text-5xl md:text-6xl md:leading-[1.06] lg:text-[3.35rem]">
+          {HERO_HEADLINE}
         </h1>
-      </motion.div>
-
-      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md">
-        <RotatingStatement />
       </motion.div>
 
       <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md max-w-xl">
@@ -51,21 +44,19 @@ export function HeroContent({ className }: HeroContentProps) {
 
       <motion.div
         variants={prefersReducedMotion ? undefined : heroReveal}
-        className="mt-content-md flex flex-col gap-3 sm:flex-row sm:items-center"
+        className="mt-content-lg flex flex-col gap-3 sm:flex-row sm:items-center"
       >
-        <Button asChild size="lg">
-          <Link href="#projects">View Featured Work</Link>
-        </Button>
         <Button
-          asChild
-          variant="outline"
+          type="button"
           size="lg"
-          className="border-primary/25 text-text-primary hover:border-primary/40 hover:bg-primary/[0.06]"
+          onClick={open}
+          className="shadow-[0_0_32px_rgba(0,217,255,0.18)] transition-shadow hover:shadow-[0_0_40px_rgba(0,217,255,0.28)]"
         >
-          <Link href="/ai" className="inline-flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary/80" aria-hidden="true" />
-            Meet my AI Twin
-          </Link>
+          <Sparkles className="h-4 w-4" aria-hidden="true" />
+          Meet My AI Twin
+        </Button>
+        <Button asChild variant="outline" size="lg">
+          <Link href="#projects">View My Work</Link>
         </Button>
       </motion.div>
 

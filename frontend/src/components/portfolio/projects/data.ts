@@ -14,7 +14,8 @@ export const FEATURED_PROJECTS: ProjectData[] = [
       'An AI-powered business intelligence platform that transforms complex business data into meaningful insights using intelligent AI workflows.',
     media: { type: 'placeholder', alt: 'Business Intelligence Assistant product preview' },
     technologies: ['LLMs', 'RAG', 'FastAPI', 'Agentic AI'],
-    layout: 'text-left'
+    layout: 'text-left',
+    aiExplainPrompt: 'Explain the Business Intelligence Assistant project in detail.'
   },
   {
     id: 'multi-tool-ai-agent',
@@ -30,7 +31,8 @@ export const FEATURED_PROJECTS: ProjectData[] = [
       'An intelligent AI agent capable of reasoning, tool calling, memory management and workflow automation across multiple tools.',
     media: { type: 'placeholder', alt: 'Multi-Tool AI Agent product preview' },
     technologies: ['LangGraph', 'MCP', 'FastAPI', 'Tool Calling'],
-    layout: 'text-right'
+    layout: 'text-right',
+    aiExplainPrompt: 'Explain the Multi-Tool AI Agent project in detail.'
   },
   {
     id: 'jagrukmahila',
@@ -46,7 +48,8 @@ export const FEATURED_PROJECTS: ProjectData[] = [
     media: { type: 'placeholder', alt: 'jagrukmahila.in website preview' },
     technologies: ['Gemini', 'AI Chatbot', 'Next.js', 'Node.js'],
     layout: 'text-left',
-    liveUrl: 'https://jagrukmahila.in'
+    liveUrl: 'https://jagrukmahila.in',
+    aiExplainPrompt: 'Explain the jagrukmahila.in project in detail.'
   }
 ];
 

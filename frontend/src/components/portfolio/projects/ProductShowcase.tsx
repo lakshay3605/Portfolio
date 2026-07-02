@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
+import { useFloatingAssistant } from '@/components/ai-chat/FloatingAssistantProvider';
 import { fadeUp, transition } from '@/lib/motion';
 import { cn } from '@/lib/cn';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
@@ -17,8 +19,13 @@ export interface ProductShowcaseProps {
 
 export function ProductShowcase({ project, className }: ProductShowcaseProps) {
   const prefersReducedMotion = useReducedMotion();
+  const { openWithPrompt } = useFloatingAssistant();
   const isVisualLeft = project.layout === 'text-right';
   const titleId = `project-${project.id}-title`;
+
+  const handleExplainProject = () => {
+    openWithPrompt(project.aiExplainPrompt);
+  };
 
   return (
     <motion.article
@@ -61,9 +68,9 @@ export function ProductShowcase({ project, className }: ProductShowcaseProps) {
             ))}
           </ul>
 
-          <div className="mt-content-lg">
+          <div className="mt-content-lg flex flex-wrap gap-3">
             {project.githubUrl ? (
-              <Button asChild size="lg">
+              <Button asChild size="lg" variant="outline">
                 <Link
                   href={project.githubUrl}
                   target="_blank"
@@ -74,10 +81,34 @@ export function ProductShowcase({ project, className }: ProductShowcaseProps) {
                 </Link>
               </Button>
             ) : (
-              <Button type="button" size="lg" aria-label={`GitHub repository for ${project.title} — coming soon`}>
+              <Button type="button" size="lg" variant="outline" disabled>
                 GitHub
               </Button>
             )}
+
+            {project.liveUrl ? (
+              <Button asChild size="lg" variant="outline">
+                <Link
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open live demo for ${project.title}`}
+                >
+                  Live Demo
+                </Link>
+              </Button>
+            ) : null}
+
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              className="border-primary/25 hover:border-primary/40 hover:bg-primary/[0.06]"
+              onClick={handleExplainProject}
+            >
+              <Sparkles className="h-4 w-4 text-primary/80" aria-hidden="true" />
+              Explain this Project
+            </Button>
           </div>
         </div>
 
