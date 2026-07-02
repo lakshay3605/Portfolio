@@ -74,7 +74,7 @@ export default function AdminReplayPage() {
         params.set(key, 'true');
       }
     }
-    params.set('limit', '100');
+    params.set('limit', '50');
     return params.toString();
   }, [filters]);
 

@@ -21,7 +21,6 @@ export function AiTwinLauncher() {
         >
           <motion.button
             type="button"
-            layoutId="ai-twin-shell"
             onClick={open}
             aria-label="Open Lakshay AI"
             className={cn(

@@ -145,14 +145,7 @@ export function AiTwinModal() {
   return (
     <AnimatePresence>
       {isOpen ? (
-        <motion.div
-          key="ai-twin-modal-root"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={MODAL_TRANSITION}
-        >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           <motion.button
             type="button"
             aria-label="Minimize Lakshay AI"
@@ -160,7 +153,7 @@ export function AiTwinModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={MODAL_TRANSITION}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
             onClick={minimize}
           />
 
@@ -168,11 +161,10 @@ export function AiTwinModal() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="ai-twin-modal-title"
-            layoutId="ai-twin-shell"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             onClick={(event) => event.stopPropagation()}
             className={cn(
               'relative z-10 flex w-[min(900px,92vw)] flex-col overflow-hidden rounded-[28px] border border-white/10',
@@ -233,7 +225,7 @@ export function AiTwinModal() {
               Lakshay AI
             </span>
           </motion.div>
-        </motion.div>
+        </div>
       ) : null}
     </AnimatePresence>
   );

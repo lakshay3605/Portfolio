@@ -8,7 +8,7 @@ import { Typography } from '@/components/ui/Typography';
 import { useFloatingAssistant } from '@/components/ai-chat/FloatingAssistantProvider';
 import { heroReveal, staggerContainer } from '@/lib/motion';
 import { cn } from '@/lib/cn';
-import { HERO_DESCRIPTION, HERO_GREETING, HERO_HEADLINE } from './constants';
+import { HERO_DESCRIPTION, HERO_GREETING, HERO_HEADLINE, HERO_OVERLINE } from './constants';
 import { AchievementPills } from './AchievementPills';
 
 export interface HeroContentProps {
@@ -21,47 +21,63 @@ export function HeroContent({ className }: HeroContentProps) {
 
   return (
     <motion.div
-      className={cn('flex flex-col', className)}
+      className="hero-copy"
       initial={prefersReducedMotion ? false : 'initial'}
       animate="animate"
       variants={staggerContainer}
     >
-      <motion.div variants={prefersReducedMotion ? undefined : heroReveal}>
-        <Typography variant="overline" className="text-text-secondary">
-          {HERO_GREETING}
-        </Typography>
+      {/* Top Eyebrow Badge */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="eyebrow-custom">
+        <span className="pulse" />
+        AI Developer &nbsp;•&nbsp; Product Builder
       </motion.div>
 
-      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md">
-        <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-text-primary sm:text-5xl md:text-6xl md:leading-[1.06] lg:text-[3.35rem]">
-          {HERO_HEADLINE}
+      {/* Heading */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal}>
+        <h1 className="headline-custom">
+          <span className="hi">Hi, I&apos;m</span>
+          <span className="name">Lakshay Mahajan.</span>
         </h1>
       </motion.div>
 
-      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md max-w-xl">
-        <Typography variant="body-lg">{HERO_DESCRIPTION}</Typography>
+      {/* Tagline */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal}>
+        <p className="tagline-custom">
+          Building <span className="accent">production-ready AI products</span> — from concept to deployment.
+        </p>
       </motion.div>
 
-      <motion.div
-        variants={prefersReducedMotion ? undefined : heroReveal}
-        className="mt-content-lg flex flex-col gap-3 sm:flex-row sm:items-center"
-      >
-        <Button
-          type="button"
-          size="lg"
-          onClick={open}
-          className="shadow-[0_0_32px_rgba(0,217,255,0.18)] transition-shadow hover:shadow-[0_0_40px_rgba(0,217,255,0.28)]"
+      {/* Bio Description */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal}>
+        <p className="bio-custom">
+          Currently in my fourth year of <b>B.Tech (AI &amp; ML)</b>, I&apos;ve gained <b>7+ months</b> of professional AI development experience building LLM-powered applications, AI automation workflows, and production systems at KVGAI. Beyond engineering, I enjoy leading communities, winning hackathons, and turning ambitious ideas into real products.
+        </p>
+      </motion.div>
+
+      {/* Buttons Row */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="cta-row-custom">
+        <Link
+          href="/Lakshay Mahajan Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-custom btn-primary-custom"
         >
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
-          Meet My AI Twin
-        </Button>
-        <Button asChild variant="outline" size="lg">
-          <Link href="#projects">View My Work</Link>
-        </Button>
+          View Résumé &rarr;
+        </Link>
+        <Link
+          href="#contact"
+          className="btn-custom btn-secondary-custom"
+        >
+          Get in touch
+        </Link>
       </motion.div>
 
-      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="mt-content-md">
-        <AchievementPills />
+      {/* Badges/Accomplishments */}
+      <motion.div variants={prefersReducedMotion ? undefined : heroReveal} className="badges-custom">
+        <span className="badge-custom gold"><span className="ico">🏆</span>National Hackathon Winner</span>
+        <span className="badge-custom violet"><span className="ico">💼</span>AI Developer — KVGAI</span>
+        <span className="badge-custom mint"><span className="ico">🚀</span>President — THINK AI</span>
+        <span className="badge-custom blue"><span className="ico">🌐</span>President — HackSphere IPEC</span>
       </motion.div>
     </motion.div>
   );

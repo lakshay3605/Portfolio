@@ -53,10 +53,10 @@ export function Navigation() {
         >
           <Link
             href="#hero"
-            className="text-sm font-semibold tracking-tight text-text-primary transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="logo-custom focus-visible:outline-none"
             onClick={() => setMobileOpen(false)}
           >
-            Lakshay<span className="text-text-tertiary">.ai</span>
+            <span className="bracket">&lt;</span>Lakshay<span className="dot">.ai</span><span className="bracket">/&gt;</span>
           </Link>
 
           <ul className="hidden items-center gap-1 lg:flex" role="list">
@@ -64,7 +64,7 @@ export function Navigation() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-button px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="font-mono text-[12.5px] tracking-wider text-[#8b93ab] hover:text-white hover:bg-white/5 px-4 py-2 rounded-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {item.label}
                 </Link>

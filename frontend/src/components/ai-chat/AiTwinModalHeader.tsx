@@ -51,14 +51,6 @@ export function AiTwinModalHeader({ onClose, onMinimize, className }: AiTwinModa
         >
           <Minus className="h-4 w-4" aria-hidden="true" />
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close Lakshay AI"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-text-secondary transition-colors hover:border-white/20 hover:bg-white/5 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-        >
-          <X className="h-4 w-4" aria-hidden="true" />
-        </button>
       </div>
     </header>
   );

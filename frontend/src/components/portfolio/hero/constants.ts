@@ -1,11 +1,11 @@
-export const HERO_GREETING = "Hi, I'm Lakshay Mahajan.";
+export const HERO_GREETING = "Hi, I'm\nLakshay Mahajan.";
 
-export const HERO_HEADLINE = 'I build AI products that solve real problems.';
+export const HERO_HEADLINE = "Building production-ready AI products\nfrom concept to deployment.";
 
 export const HERO_DESCRIPTION =
-  'AI Developer at KVGAI, National Hackathon Winner, and a builder passionate about taking ideas from concept to deployment.';
+  "Currently in my fourth year of B.Tech (AI & ML), I've gained 7+ months of professional AI development experience building LLM-powered applications, AI automation workflows, and production systems at KVGAI. Beyond engineering, I enjoy leading communities, winning hackathons, and turning ambitious ideas into real products.";
 
-export const HERO_OVERLINE = 'AI Engineer • Product Builder • Community Leader';
+export const HERO_OVERLINE = "AI Developer • Product Builder";
 
 export const HERO_HEADLINE_LEGACY = ['Engineering AI products', 'that people actually use.'] as const;
 
@@ -31,7 +31,7 @@ export const HERO_CREDENTIALS = [
 ] as const;
 
 export const HERO_PHOTO = {
-  src: undefined as string | undefined,
+  src: '/lakshay_portrait.png',
   alt: 'Lakshay Mahajan'
 } as const;
 
