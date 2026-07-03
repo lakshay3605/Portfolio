@@ -15,7 +15,7 @@ function getEnvVar(key: string, optional = false): string {
 export const env = {
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV === 'development',
-  openaiApiKey: () => getEnvVar('OPENAI_API_KEY', true),
+  groqApiKey: () => getEnvVar('GROQ_API_KEY', true),
   supabaseUrl: () => getEnvVar('NEXT_PUBLIC_SUPABASE_URL', true),
   supabaseAnonKey: () => getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY', true),
   elevenLabsApiKey: () => getEnvVar('ELEVENLABS_API_KEY', true)

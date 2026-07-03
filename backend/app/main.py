@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     model = (
         settings.gemini_model
         if settings.llm_provider == "gemini"
-        else settings.openai_model
+        else settings.groq_model
     )
     logger.info(
         "LLM ready — provider=%s model=%s service=%s",
@@ -83,7 +83,7 @@ def create_app() -> FastAPI:
             "llm_model": (
                 active.gemini_model
                 if active.llm_provider == "gemini"
-                else active.openai_model
+                else active.groq_model
             ),
             "llm_service": type(create_llm_service(active)).__name__,
         }

@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 ENV_FILE_KEYS = (
-    "OPENAI_API_KEY",
+    "GROQ_API_KEY",
     "GEMINI_API_KEY",
     "LLM_PROVIDER",
     "GEMINI_MODEL",
@@ -49,10 +49,10 @@ class Settings(BaseSettings):
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
 
-    openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
-    openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
-    openai_timeout_seconds: float = Field(default=60.0, alias="OPENAI_TIMEOUT_SECONDS")
+    groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
+    groq_model: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL")
+    groq_base_url: str | None = Field(default="https://api.groq.com/openai/v1", alias="GROQ_BASE_URL")
+    groq_timeout_seconds: float = Field(default=60.0, alias="GROQ_TIMEOUT_SECONDS")
 
     cors_origins: str = Field(
         default="http://localhost:3000",
@@ -64,32 +64,32 @@ class Settings(BaseSettings):
 
     @property
     def resolved_gemini_api_key(self) -> str:
-        return (self.gemini_api_key or self.openai_api_key).strip()
+        return (self.gemini_api_key or self.groq_api_key).strip()
 
     @model_validator(mode="after")
     def normalize_settings(self) -> Self:
         self.llm_provider = self.llm_provider.strip().lower()
         self.gemini_model = self.gemini_model.strip()
-        self.openai_model = self.openai_model.strip()
+        self.groq_model = self.groq_model.strip()
 
-        if self.openai_base_url is not None:
-            stripped = self.openai_base_url.strip()
-            self.openai_base_url = stripped or None
+        if self.groq_base_url is not None:
+            stripped = self.groq_base_url.strip()
+            self.groq_base_url = stripped or None
 
         file_values = _read_env_file_values()
 
         file_gemini_key = file_values.get("GEMINI_API_KEY", "")
-        file_openai_key = file_values.get("OPENAI_API_KEY", "")
+        file_groq_key = file_values.get("GROQ_API_KEY", "")
 
         if not self.gemini_api_key.strip() and file_gemini_key:
             self.gemini_api_key = file_gemini_key
 
-        current_openai_key = self.openai_api_key.strip()
-        if file_openai_key and (len(current_openai_key) < 10 or current_openai_key == "test"):
-            self.openai_api_key = file_openai_key
+        current_groq_key = self.groq_api_key.strip()
+        if file_groq_key and (len(current_groq_key) < 10 or current_groq_key == "test"):
+            self.groq_api_key = file_groq_key
 
-        if not self.gemini_api_key.strip() and self.openai_api_key.strip():
-            self.gemini_api_key = self.openai_api_key.strip()
+        if not self.gemini_api_key.strip() and self.groq_api_key.strip():
+            self.gemini_api_key = self.groq_api_key.strip()
 
         if file_values.get("LLM_PROVIDER"):
             self.llm_provider = file_values["LLM_PROVIDER"].lower()
