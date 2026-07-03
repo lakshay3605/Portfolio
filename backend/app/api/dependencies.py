@@ -38,10 +38,14 @@ def get_intent_router() -> IntentRouter:
 @lru_cache
 def get_analytics_store() -> AnalyticsStore:
     settings = get_settings()
+    has_supabase = bool(settings.supabase_url.strip() and settings.supabase_service_role_key.strip())
     print(
         "Creating AnalyticsStore from SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
-        f"configured={bool(settings.supabase_url.strip() and settings.supabase_service_role_key.strip())}"
+        f"configured={has_supabase}"
     )
+    if not has_supabase:
+        from app.services.analytics_store import InMemoryAnalyticsStore
+        return InMemoryAnalyticsStore()
     return AnalyticsStore(
         supabase_url=settings.supabase_url,
         supabase_key=settings.supabase_service_role_key,

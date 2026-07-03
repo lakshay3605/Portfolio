@@ -17,15 +17,23 @@ export function ProjectStatusBadge({ status, className }: ProjectStatusBadgeProp
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide',
-        variantStyles[status.variant],
+        'inline-flex items-center gap-3 rounded-full border px-3 py-1.5 text-xs font-mono tracking-wide',
+        'border-border-primary/70 bg-background/40 text-text-secondary',
         className
       )}
       title={status.description}
       aria-label={`${status.label}: ${status.description}`}
     >
-      <span aria-hidden="true">{status.emoji}</span>
-      {status.label}
+      <span
+        aria-hidden="true"
+        className={cn(
+          'inline-flex h-5 w-5 items-center justify-center rounded-sm text-[12px]'
+        )}
+      >
+        {status.emoji}
+      </span>
+
+      <span className="text-xs font-mono text-text-primary">{status.label}</span>
     </span>
   );
 }

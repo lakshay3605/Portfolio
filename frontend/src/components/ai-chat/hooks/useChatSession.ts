@@ -6,8 +6,6 @@ import { streamChatMessage } from '../api/streamChat';
 import { FRIENDLY_ERROR_MESSAGE } from '../constants';
 import type { ChatMessage, ChatPhase } from '../types';
 
-const FEEDBACK_INTERVAL = 5;
-
 function createMessage(
   role: ChatMessage['role'],
   content: string,
@@ -19,32 +17,48 @@ function createMessage(
     content,
     status,
     createdAt: Date.now(),
-    avatarState: role === 'assistant' ? 'speaking' : undefined
+    avatarState:
+      role === 'assistant' ? (status === 'complete' ? 'idle' : 'speaking') : undefined
   };
+}
+
+export interface UseChatSessionOptions {
+  welcomeMessage?: string;
+}
+
+function createInitialMessages(welcomeMessage?: string): ChatMessage[] {
+  if (!welcomeMessage) {
+    return [];
+  }
+
+  return [createMessage('assistant', welcomeMessage, 'complete')];
 }
 
 export interface ChatSession {
   messages: ChatMessage[];
   phase: ChatPhase;
   hasMessages: boolean;
+  hasConversation: boolean;
   isBusy: boolean;
   sessionId: string;
   showFeedback: boolean;
   sendMessage: (text: string) => Promise<void>;
+  sendHiddenPrompt: (text: string) => Promise<void>;
   cancelRequest: () => void;
   dismissFeedback: () => void;
 }
 
 /** Session-scoped conversation state with beta analytics hooks. */
-export function useChatSession(): ChatSession {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export function useChatSession(options?: UseChatSessionOptions): ChatSession {
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    createInitialMessages(options?.welcomeMessage)
+  );
   const [phase, setPhase] = useState<ChatPhase>('idle');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [hasConversation, setHasConversation] = useState(false);
   const sessionId = useMemo(() => getSessionId(), []);
   const abortRef = useRef<AbortController | null>(null);
   const conversationNumberRef = useRef(0);
-  const assistantResponsesRef = useRef(0);
-  const dismissedFeedbackAtRef = useRef(0);
 
   const cancelRequest = useCallback(() => {
     abortRef.current?.abort();
@@ -52,12 +66,11 @@ export function useChatSession(): ChatSession {
   }, []);
 
   const dismissFeedback = useCallback(() => {
-    dismissedFeedbackAtRef.current = assistantResponsesRef.current;
     setShowFeedback(false);
   }, []);
 
-  const sendMessage = useCallback(
-    async (text: string) => {
+  const runAssistantTurn = useCallback(
+    async (text: string, showUserMessage: boolean) => {
       const trimmed = text.trim();
       if (!trimmed || phase !== 'idle') return;
 
@@ -67,12 +80,15 @@ export function useChatSession(): ChatSession {
 
       conversationNumberRef.current += 1;
       const conversationNumber = conversationNumberRef.current;
-
-      const userMessage = createMessage('user', trimmed, 'complete');
       const assistantId = crypto.randomUUID();
 
-      setMessages((prev) => [...prev, userMessage]);
+      if (showUserMessage) {
+        setMessages((prev) => [...prev, createMessage('user', trimmed, 'complete')]);
+      }
+
+      setHasConversation(true);
       setPhase('thinking');
+      setShowFeedback(false);
 
       let assistantStarted = false;
 
@@ -109,11 +125,6 @@ export function useChatSession(): ChatSession {
           { sessionId, conversationNumber }
         );
 
-        assistantResponsesRef.current += 1;
-        const shouldPromptFeedback =
-          assistantResponsesRef.current % FEEDBACK_INTERVAL === 0 &&
-          assistantResponsesRef.current > dismissedFeedbackAtRef.current;
-
         setMessages((prev) =>
           prev.map((message) =>
             message.id === assistantId
@@ -122,11 +133,8 @@ export function useChatSession(): ChatSession {
           )
         );
         setPhase('idle');
-
-        if (shouldPromptFeedback) {
-          setShowFeedback(true);
-        }
-      } catch (error) {
+        setShowFeedback(true);
+      } catch {
         if (controller.signal.aborted) {
           setPhase('idle');
           return;
@@ -161,14 +169,26 @@ export function useChatSession(): ChatSession {
     [phase, sessionId]
   );
 
+  const sendMessage = useCallback(
+    async (text: string) => runAssistantTurn(text, true),
+    [runAssistantTurn]
+  );
+
+  const sendHiddenPrompt = useCallback(
+    async (text: string) => runAssistantTurn(text, false),
+    [runAssistantTurn]
+  );
+
   return {
     messages,
     phase,
     hasMessages: messages.length > 0,
+    hasConversation,
     isBusy: phase !== 'idle',
     sessionId,
     showFeedback,
     sendMessage,
+    sendHiddenPrompt,
     cancelRequest,
     dismissFeedback
   };

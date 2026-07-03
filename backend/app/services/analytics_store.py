@@ -243,7 +243,7 @@ class AnalyticsStore:
             },
         )
 
-    def get_admin_stats(self, *, recent_limit: int = 10) -> AdminStats:
+    def get_admin_stats(self, *, recent_limit: int = 50) -> AdminStats:
         conversations = self._select_all(
             "conversations",
             "session_id,timestamp,user_message,ai_response,response_time_ms,conversation_number",
@@ -655,3 +655,39 @@ class AnalyticsStore:
         if unknown_questions and not replay["has_unknown_questions"]:
             return False
         return True
+
+
+class InMemoryAnalyticsStore(AnalyticsStore):
+    """In-memory fallback for local development when Supabase is not configured."""
+
+    def __init__(self) -> None:
+        self._conversations: list[dict[str, Any]] = []
+        self._feedback: list[dict[str, Any]] = []
+        self._unknown_questions: list[dict[str, Any]] = []
+        print("InMemoryAnalyticsStore initialized (using in-memory fallback because Supabase is not configured)")
+
+    def _insert(self, table_name: str, payload: dict[str, Any]) -> None:
+        serialized = _serialize_row(payload)
+        if "id" not in serialized:
+            serialized["id"] = len(getattr(self, f"_{table_name}")) + 1
+        getattr(self, f"_{table_name}").append(serialized)
+        print(f"InMemoryAnalyticsStore insert table={table_name} keys={list(serialized.keys())}")
+
+    def _select_all(
+        self,
+        table_name: str,
+        columns: str,
+        *,
+        order: str,
+    ) -> list[dict[str, Any]]:
+        column, direction = order.split(".", 1)
+        descending = direction.lower() == "desc"
+        rows = list(getattr(self, f"_{table_name}"))
+        
+        def get_sort_key(row: dict[str, Any]) -> Any:
+            val = row.get(column)
+            return "" if val is None else val
+
+        rows.sort(key=get_sort_key, reverse=descending)
+        return rows
+

@@ -7,9 +7,14 @@ import { submitIssueReport } from '@/lib/analytics';
 export interface ReportIssueButtonProps {
   sessionId: string;
   className?: string;
+  placement?: 'fixed' | 'inline';
 }
 
-export function ReportIssueButton({ sessionId, className }: ReportIssueButtonProps) {
+export function ReportIssueButton({
+  sessionId,
+  className,
+  placement = 'fixed'
+}: ReportIssueButtonProps) {
   const [open, setOpen] = useState(false);
   const [issue, setIssue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +47,9 @@ export function ReportIssueButton({ sessionId, className }: ReportIssueButtonPro
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          'fixed bottom-24 right-4 z-30 rounded-full border border-white/10 bg-[#0f172a]/95 px-4 py-2.5 text-xs font-medium text-text-secondary shadow-lg backdrop-blur-xl transition-colors hover:border-white/20 hover:text-text-primary sm:bottom-28 sm:right-6 sm:text-sm',
+          placement === 'fixed'
+            ? 'fixed right-4 z-30 rounded-full border border-white/10 bg-[#0f172a]/95 px-4 py-2.5 text-xs font-medium text-text-secondary shadow-lg backdrop-blur-xl transition-colors hover:border-white/20 hover:text-text-primary max-sm:bottom-[calc(9.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-28 sm:right-6 sm:text-sm'
+            : 'rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-medium text-text-secondary transition-colors hover:border-white/20 hover:text-text-primary',
           className
         )}
       >

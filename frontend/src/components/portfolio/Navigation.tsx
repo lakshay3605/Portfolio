@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Menu, Sparkles, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Menu, X } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { cn } from '@/lib/cn';
 
@@ -39,61 +38,40 @@ export function Navigation() {
   }, [mobileOpen]);
 
   return (
-    <header
-      className={cn(
-        'fixed inset-x-0 top-0 z-50 border-b transition-all duration-300',
-        scrolled
-          ? 'border-white/10 bg-background/80 shadow-nav backdrop-blur-xl'
-          : 'border-transparent bg-transparent'
-      )}
-    >
-      <Container size="xl">
-        <nav
-          className="flex h-16 items-center justify-between lg:h-18"
-          aria-label="Primary navigation"
+    <header className="fixed inset-x-0 top-0 z-50 transition-all duration-300">
+      <nav className={cn('nav', scrolled && 'scrolled')} aria-label="Primary navigation">
+        <Link
+          href="#hero"
+          className="logo focus-visible:outline-none"
+          onClick={() => setMobileOpen(false)}
         >
-          <Link
-            href="#hero"
-            className="text-sm font-semibold tracking-tight text-text-primary transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            onClick={() => setMobileOpen(false)}
-          >
-            Lakshay<span className="text-text-tertiary">.ai</span>
-          </Link>
+          <span className="bracket">&lt;</span>Lakshay<span className="dot">.ai</span><span className="bracket">/&gt;</span>
+        </Link>
 
-          <ul className="hidden items-center gap-1 lg:flex" role="list">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="rounded-button px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <div className="hidden items-center gap-3 lg:flex">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/ai" className="inline-flex items-center gap-2">
-                Ask AI
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
+        <ul className="nav-links hidden lg:flex" role="list">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="focus-visible:outline-none"
+              >
+                {item.label}
               </Link>
-            </Button>
-          </div>
+            </li>
+          ))}
+        </ul>
 
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-primary text-text-primary transition-colors hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-navigation"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMobileOpen((open) => !open)}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </nav>
-      </Container>
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-primary text-text-primary transition-colors hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMobileOpen((open) => !open)}
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
 
       <div
         id="mobile-navigation"
@@ -102,7 +80,7 @@ export function Navigation() {
           mobileOpen ? 'visible opacity-100' : 'invisible max-h-0 opacity-0 overflow-hidden'
         )}
       >
-        <Container size="xl" className="py-content-md">
+        <div className="px-6 py-4">
           <ul className="flex flex-col gap-1" role="list">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
@@ -116,19 +94,7 @@ export function Navigation() {
               </li>
             ))}
           </ul>
-          <div className="mt-content-md border-t border-border-primary/60 pt-content-md">
-            <Button asChild variant="outline" className="w-full">
-              <Link
-                href="/ai"
-                className="inline-flex items-center justify-center gap-2"
-                onClick={() => setMobileOpen(false)}
-              >
-                Ask AI
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
-        </Container>
+        </div>
       </div>
     </header>
   );
