@@ -1,15 +1,21 @@
-import { Container } from '@/components/ui/Container';
-import { SectionIntro, SECTION_LAYOUT } from '@/components/portfolio/SectionIntro';
-import { EXPERIENCE_SECTION, FEATURED_EXPERIENCE } from './data';
+import { FEATURED_EXPERIENCE } from './data';
 import { ExperienceCard } from './ExperienceCard';
 
 export function ExperienceSection() {
   return (
-    <Container size="xl">
-      <div className={SECTION_LAYOUT}>
-        <SectionIntro title={EXPERIENCE_SECTION.title} />
-        <ExperienceCard experience={FEATURED_EXPERIENCE} />
+    <>
+      <div className="section-header reveal">
+        <div className="section-eyebrow">Journey</div>
+        <h2 className="section-title">
+          Work <span className="grad">Experience</span>
+        </h2>
       </div>
-    </Container>
+
+      <div className="timeline reveal">
+        <div className="timeline-item">
+          <ExperienceCard experience={FEATURED_EXPERIENCE} />
+        </div>
+      </div>
+    </>
   );
 }

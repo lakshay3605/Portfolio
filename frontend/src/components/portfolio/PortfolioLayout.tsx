@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { PageTransition } from './PageTransition';
 import { Navigation } from './Navigation';
 import { Footer } from './Footer';
@@ -13,9 +14,45 @@ export interface PortfolioLayoutProps {
 }
 
 export function PortfolioLayout({ children }: PortfolioLayoutProps) {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const progress = (window.scrollY / totalHeight) * 100;
+        setScrollProgress(progress);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    const elements = document.querySelectorAll('.reveal, .reveal-scale');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el));
+    };
+  }, [children]);
+
   return (
     <FloatingAssistantProvider>
       <AiTwinChatProvider>
+        <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
         <Navigation />
         <PageTransition>
           <div className="relative bg-background min-h-screen overflow-hidden">

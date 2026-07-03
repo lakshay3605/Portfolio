@@ -38,52 +38,40 @@ export function Navigation() {
   }, [mobileOpen]);
 
   return (
-    <header
-      className={cn(
-        'fixed inset-x-0 top-0 z-50 border-b transition-all duration-300',
-        scrolled
-          ? 'border-white/10 bg-background/80 shadow-nav backdrop-blur-xl'
-          : 'border-transparent bg-transparent'
-      )}
-    >
-      <Container size="xl">
-        <nav
-          className="flex h-16 items-center justify-between lg:h-18"
-          aria-label="Primary navigation"
+    <header className="fixed inset-x-0 top-0 z-50 transition-all duration-300">
+      <nav className={cn('nav', scrolled && 'scrolled')} aria-label="Primary navigation">
+        <Link
+          href="#hero"
+          className="logo focus-visible:outline-none"
+          onClick={() => setMobileOpen(false)}
         >
-          <Link
-            href="#hero"
-            className="logo-custom focus-visible:outline-none"
-            onClick={() => setMobileOpen(false)}
-          >
-            <span className="bracket">&lt;</span>Lakshay<span className="dot">.ai</span><span className="bracket">/&gt;</span>
-          </Link>
+          <span className="bracket">&lt;</span>Lakshay<span className="dot">.ai</span><span className="bracket">/&gt;</span>
+        </Link>
 
-          <ul className="hidden items-center gap-1 lg:flex" role="list">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="font-mono text-[12.5px] tracking-wider text-[#8b93ab] hover:text-white hover:bg-white/5 px-4 py-2 rounded-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <ul className="nav-links hidden lg:flex" role="list">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="focus-visible:outline-none"
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-primary text-text-primary transition-colors hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-navigation"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMobileOpen((open) => !open)}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </nav>
-      </Container>
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-primary text-text-primary transition-colors hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMobileOpen((open) => !open)}
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
 
       <div
         id="mobile-navigation"
@@ -92,7 +80,7 @@ export function Navigation() {
           mobileOpen ? 'visible opacity-100' : 'invisible max-h-0 opacity-0 overflow-hidden'
         )}
       >
-        <Container size="xl" className="py-content-md">
+        <div className="px-6 py-4">
           <ul className="flex flex-col gap-1" role="list">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
@@ -106,7 +94,7 @@ export function Navigation() {
               </li>
             ))}
           </ul>
-        </Container>
+        </div>
       </div>
     </header>
   );

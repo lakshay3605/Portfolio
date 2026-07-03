@@ -1,5 +1,4 @@
 import { Container } from '@/components/ui/Container';
-import { Section } from '@/components/ui/Section';
 import { HeroSection } from '@/components/portfolio/hero/HeroSection';
 import { ProjectsSection } from '@/components/portfolio/projects/ProjectsSection';
 import { ExperienceSection } from '@/components/portfolio/experience/ExperienceSection';
@@ -50,23 +49,27 @@ function renderSectionContent(sectionId: (typeof SECTIONS)[number]['id']) {
 export function PortfolioPage() {
   return (
     <PortfolioLayout>
-      {SECTIONS.map((section) => (
-        <Section
-          key={section.id}
-          id={section.id}
-          variant={section.variant}
-          spacing={section.id === 'hero' ? 'sm' : section.spacing}
-          className={
-            section.id === 'hero'
-              ? 'overflow-hidden !py-0'
-              : section.id === 'projects'
-                ? '!pt-content-xl'
-                : undefined
-          }
-        >
-          {renderSectionContent(section.id)}
-        </Section>
-      ))}
+      {SECTIONS.map((section, index) => {
+        if (section.id === 'resume') {
+          return (
+            <div key={section.id} id={section.id}>
+              {index > 0 && <div className="section-divider" />}
+              {renderSectionContent(section.id)}
+            </div>
+          );
+        }
+        return (
+          <div key={section.id}>
+            {index > 0 && <div className="section-divider" />}
+            <section
+              id={section.id}
+              className={section.id === 'hero' ? 'hero-wrap' : 'section'}
+            >
+              {renderSectionContent(section.id)}
+            </section>
+          </div>
+        );
+      })}
     </PortfolioLayout>
   );
 }

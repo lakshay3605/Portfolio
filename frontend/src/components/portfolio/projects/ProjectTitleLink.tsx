@@ -22,7 +22,7 @@ export function ProjectTitleLink({ title, href, id, className }: ProjectTitleLin
         aria-label={`Open live project: ${title}`}
         className="inline-flex cursor-pointer items-center gap-2 transition-colors duration-300 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <span className="relative text-2xl font-semibold tracking-tight text-text-primary transition-colors duration-300 group-hover/title:text-primary sm:text-3xl">
+        <span className="relative text-2xl font-semibold tracking-tight text-text-primary transition-colors duration-300 group-hover/title:text-primary sm:text-3xl text-gradient-custom">
           {title}
           <span
             className="absolute -bottom-1 left-0 h-px w-0 bg-primary transition-all duration-300 ease-out group-hover/title:w-full group-focus-within/title:w-full"
