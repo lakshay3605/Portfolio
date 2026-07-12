@@ -11,8 +11,10 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 ENV_FILE_KEYS = (
     "GROQ_API_KEY",
     "GEMINI_API_KEY",
+    "OPENROUTER_API_KEY",
     "LLM_PROVIDER",
     "GEMINI_MODEL",
+    "OPENROUTER_MODEL",
     "SUPABASE_URL",
     "SUPABASE_SERVICE_ROLE_KEY",
 )
@@ -54,6 +56,11 @@ class Settings(BaseSettings):
     groq_base_url: str | None = Field(default="https://api.groq.com/openai/v1", alias="GROQ_BASE_URL")
     groq_timeout_seconds: float = Field(default=60.0, alias="GROQ_TIMEOUT_SECONDS")
 
+    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
+    openrouter_model: str = Field(default="meta-llama/llama-3.3-70b-instruct", alias="OPENROUTER_MODEL")
+    openrouter_base_url: str | None = Field(default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL")
+    openrouter_timeout_seconds: float = Field(default=60.0, alias="OPENROUTER_TIMEOUT_SECONDS")
+
     cors_origins: str = Field(
         default="http://localhost:3000",
         alias="CORS_ORIGINS",
@@ -71,15 +78,21 @@ class Settings(BaseSettings):
         self.llm_provider = self.llm_provider.strip().lower()
         self.gemini_model = self.gemini_model.strip()
         self.groq_model = self.groq_model.strip()
+        self.openrouter_model = self.openrouter_model.strip()
 
         if self.groq_base_url is not None:
             stripped = self.groq_base_url.strip()
             self.groq_base_url = stripped or None
 
+        if self.openrouter_base_url is not None:
+            stripped = self.openrouter_base_url.strip()
+            self.openrouter_base_url = stripped or None
+
         file_values = _read_env_file_values()
 
         file_gemini_key = file_values.get("GEMINI_API_KEY", "")
         file_groq_key = file_values.get("GROQ_API_KEY", "")
+        file_openrouter_key = file_values.get("OPENROUTER_API_KEY", "")
 
         if not self.gemini_api_key.strip() and file_gemini_key:
             self.gemini_api_key = file_gemini_key
@@ -87,6 +100,10 @@ class Settings(BaseSettings):
         current_groq_key = self.groq_api_key.strip()
         if file_groq_key and (len(current_groq_key) < 10 or current_groq_key == "test"):
             self.groq_api_key = file_groq_key
+
+        current_openrouter_key = self.openrouter_api_key.strip()
+        if file_openrouter_key and (len(current_openrouter_key) < 10 or current_openrouter_key == "test"):
+            self.openrouter_api_key = file_openrouter_key
 
         if not self.gemini_api_key.strip() and self.groq_api_key.strip():
             self.gemini_api_key = self.groq_api_key.strip()
@@ -96,6 +113,9 @@ class Settings(BaseSettings):
 
         if file_values.get("GEMINI_MODEL"):
             self.gemini_model = file_values["GEMINI_MODEL"]
+
+        if file_values.get("OPENROUTER_MODEL"):
+            self.openrouter_model = file_values["OPENROUTER_MODEL"]
 
         return self
 
