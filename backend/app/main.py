@@ -69,7 +69,9 @@ async def lifespan(app: FastAPI):
         get_analytics_store()
 
     print("CORS allow_origins =", settings.cors_origin_list)
-
+    print("Provider:", settings.llm_provider)
+    print("Model:", settings.openrouter_model)
+    print("OpenRouter Key Length:", len(settings.openrouter_api_key))
     app.state.settings = settings
     yield
 
