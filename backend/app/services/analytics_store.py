@@ -112,12 +112,10 @@ class AnalyticsStore:
         url = supabase_url.strip()
         key = supabase_key.strip()
         self._client: Client = create_client(url, key)
-        print(
-            "AnalyticsStore initialized "
-            f"supabase_url={url} "
-            f"key_source=SUPABASE_SERVICE_ROLE_KEY "
-            f"key_prefix={key[:12]}... "
-            f"key_length={len(key)}"
+        logger.info(
+            "AnalyticsStore initialized supabase_url=%s key_prefix=%s...",
+            url,
+            key[:12],
         )
 
     def log_conversation_turn(
@@ -178,14 +176,16 @@ class AnalyticsStore:
             "llm_ms": _json_number(llm_ms),
             "tokens_generated": _json_number(tokens_generated),
         }
-        print(
-            "save_conversation starting "
-            f"table=conversations session_id={session_id} conversation_number={conversation_number}"
+        logger.debug(
+            "save_conversation starting table=conversations session_id=%s conversation_number=%d",
+            session_id,
+            conversation_number,
         )
         self._insert("conversations", payload)
-        print(
-            "save_conversation completed "
-            f"table=conversations session_id={session_id} conversation_number={conversation_number}"
+        logger.debug(
+            "save_conversation completed table=conversations session_id=%s conversation_number=%d",
+            session_id,
+            conversation_number,
         )
 
     def log_performance(
@@ -499,16 +499,14 @@ class AnalyticsStore:
 
     def _insert(self, table_name: str, payload: dict[str, Any]) -> None:
         session_id = payload.get("session_id")
-        print(
-            f"Supabase insert starting table={table_name} session_id={session_id} "
-            f"payload_keys={list(payload.keys())}"
+        logger.debug(
+            "Supabase insert starting table=%s session_id=%s payload_keys=%s",
+            table_name,
+            session_id,
+            list(payload.keys()),
         )
         try:
             response = self._client.table(table_name).insert(payload).execute()
-            print(
-                f"Supabase insert success table={table_name} session_id={session_id} "
-                f"response_data={response.data!r} count={response.count!r}"
-            )
             logger.info(
                 "Supabase insert success table=%s session_id=%s count=%s",
                 table_name,
@@ -516,11 +514,6 @@ class AnalyticsStore:
                 response.count,
             )
         except APIError as exc:
-            print(
-                f"Supabase insert failed table={table_name} session_id={session_id} "
-                f"code={getattr(exc, 'code', None)!r} message={exc!r} details={getattr(exc, 'details', None)!r}"
-            )
-            print(traceback.format_exc())
             logger.exception(
                 "Supabase insert failed table=%s session_id=%s code=%s message=%s",
                 table_name,
@@ -530,8 +523,6 @@ class AnalyticsStore:
             )
             raise
         except Exception:
-            print(f"Supabase insert failed table={table_name} session_id={session_id}")
-            print(traceback.format_exc())
             logger.exception(
                 "Supabase insert failed table=%s session_id=%s",
                 table_name,
@@ -567,11 +558,6 @@ class AnalyticsStore:
                     break
                 offset += page_size
         except APIError as exc:
-            print(
-                f"Supabase select failed table={table_name} columns={columns} order={order} "
-                f"code={getattr(exc, 'code', None)} message={exc}"
-            )
-            print(traceback.format_exc())
             logger.exception(
                 "Supabase select failed table=%s columns=%s order=%s code=%s message=%s",
                 table_name,
@@ -582,10 +568,6 @@ class AnalyticsStore:
             )
             return []
         except Exception:
-            print(
-                f"Unexpected analytics query failure table={table_name} columns={columns} order={order}"
-            )
-            print(traceback.format_exc())
             logger.exception(
                 "Unexpected analytics query failure table=%s columns=%s order=%s",
                 table_name,
@@ -664,14 +646,14 @@ class InMemoryAnalyticsStore(AnalyticsStore):
         self._conversations: list[dict[str, Any]] = []
         self._feedback: list[dict[str, Any]] = []
         self._unknown_questions: list[dict[str, Any]] = []
-        print("InMemoryAnalyticsStore initialized (using in-memory fallback because Supabase is not configured)")
+        logger.info("InMemoryAnalyticsStore initialized (using in-memory fallback because Supabase is not configured)")
 
     def _insert(self, table_name: str, payload: dict[str, Any]) -> None:
         serialized = _serialize_row(payload)
         if "id" not in serialized:
             serialized["id"] = len(getattr(self, f"_{table_name}")) + 1
         getattr(self, f"_{table_name}").append(serialized)
-        print(f"InMemoryAnalyticsStore insert table={table_name} keys={list(serialized.keys())}")
+        logger.debug("InMemoryAnalyticsStore insert table=%s keys=%s", table_name, list(serialized.keys()))
 
     def _select_all(
         self,

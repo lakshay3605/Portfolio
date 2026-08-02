@@ -1,6 +1,5 @@
 from functools import lru_cache
-
-from fastapi import Depends
+import logging
 
 from app.core.config import Settings, get_settings
 from app.services.analytics_store import AnalyticsStore
@@ -11,6 +10,8 @@ from app.services.llm_factory import create_llm_service
 from app.services.llm_service import LLMService
 from app.services.prompt_builder import PromptBuilder
 from app.services.prompt_service import PromptService
+
+logger = logging.getLogger(__name__)
 
 
 @lru_cache
@@ -39,9 +40,9 @@ def get_intent_router() -> IntentRouter:
 def get_analytics_store() -> AnalyticsStore:
     settings = get_settings()
     has_supabase = bool(settings.supabase_url.strip() and settings.supabase_service_role_key.strip())
-    print(
-        "Creating AnalyticsStore from SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
-        f"configured={has_supabase}"
+    logger.info(
+        "Creating AnalyticsStore configured=%s",
+        has_supabase,
     )
     if not has_supabase:
         from app.services.analytics_store import InMemoryAnalyticsStore
@@ -52,21 +53,19 @@ def get_analytics_store() -> AnalyticsStore:
     )
 
 
-def get_llm_service(settings: Settings = Depends(get_settings)) -> LLMService:
+@lru_cache
+def get_llm_service() -> LLMService:
+    settings = get_settings()
     return create_llm_service(settings)
 
 
-def get_chat_service(
-    llm_service: LLMService = Depends(get_llm_service),
-    prompt_builder: PromptBuilder = Depends(get_prompt_builder),
-    knowledge_loader: KnowledgeLoader = Depends(get_knowledge_loader),
-    intent_router: IntentRouter = Depends(get_intent_router),
-) -> ChatService:
+def get_chat_service() -> ChatService:
     return ChatService(
-        llm_service=llm_service,
-        prompt_builder=prompt_builder,
-        knowledge_loader=knowledge_loader,
-        intent_router=intent_router,
+        llm_service=get_llm_service(),
+        prompt_builder=get_prompt_builder(),
+        knowledge_loader=get_knowledge_loader(),
+        intent_router=get_intent_router(),
     )
+
 
 

@@ -15,9 +15,8 @@ router = APIRouter(prefix="/mission-control", tags=["mission-control"])
 
 
 def _log_endpoint_error(endpoint: str, exc: Exception) -> None:
-    print(f"mission-control endpoint failed: {endpoint}")
-    print(traceback.format_exc())
     logger.exception("mission-control endpoint failed: %s", endpoint, exc_info=exc)
+
 
 
 def _empty_stats_payload() -> dict[str, object]:
