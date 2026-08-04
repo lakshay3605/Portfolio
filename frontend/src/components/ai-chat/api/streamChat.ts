@@ -24,6 +24,12 @@ export interface StreamChatHandlers {
 export interface StreamChatOptions {
   sessionId: string;
   conversationNumber: number;
+  history?: ChatHistoryMessage[];
+}
+
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export async function streamChatMessage(
@@ -38,7 +44,8 @@ export async function streamChatMessage(
     body: JSON.stringify({
       message,
       session_id: options?.sessionId,
-      conversation_number: options?.conversationNumber
+      conversation_number: options?.conversationNumber,
+      history: options?.history ?? []
     }),
     signal
   });

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 import time
 
+from app.schemas.chat import ChatHistoryMessage
 from app.services.chat_metadata import ChatTurnMetadata
+from app.services.conversation_memory import normalize_history
 from app.services.intent_router import IntentRouterProtocol
 from app.services.knowledge_loader import KnowledgeLoader
 from app.services.llm_service import LLMService
@@ -31,25 +33,37 @@ class ChatService:
         self._knowledge_loader = knowledge_loader
         self._intent_router = intent_router
 
-    def prepare_chat(self, message: str) -> tuple[str, ChatTurnMetadata]:
-        return self._prepare_chat(message)
+    def prepare_chat(
+        self,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> tuple[str, ChatTurnMetadata]:
+        return self._prepare_chat(message, history)
 
-    async def chat(self, message: str) -> str:
-        instructions, _metadata = self._prepare_chat(message)
+    async def chat(
+        self,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> str:
+        instructions, normalized_history, _metadata = self._prepare_chat(message, history)
 
-        # Future: append conversation memory before user_input.
         return await self._llm_service.create_response(
             instructions=instructions,
             user_input=message,
+            history=normalized_history,
         )
 
-    async def chat_stream(self, message: str) -> AsyncIterator[str]:
-        instructions, _metadata = self._prepare_chat(message)
+    async def chat_stream(
+        self,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> AsyncIterator[str]:
+        instructions, normalized_history, _metadata = self._prepare_chat(message, history)
 
-        # Future: append conversation memory and emit avatar state events.
         async for delta in self._llm_service.stream_response(
             instructions=instructions,
             user_input=message,
+            history=normalized_history,
         ):
             yield delta
 
@@ -58,20 +72,36 @@ class ChatService:
         *,
         instructions: str,
         message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
     ) -> AsyncIterator[str]:
+        normalized_history = normalize_history(list(history or []))
         async for delta in self._llm_service.stream_response(
             instructions=instructions,
             user_input=message,
+            history=normalized_history,
         ):
             yield delta
 
-    async def complete_prepared(self, *, instructions: str, message: str) -> str:
+    async def complete_prepared(
+        self,
+        *,
+        instructions: str,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> str:
+        normalized_history = normalize_history(list(history or []))
         return await self._llm_service.create_response(
             instructions=instructions,
             user_input=message,
+            history=normalized_history,
         )
 
-    def _prepare_chat(self, message: str) -> tuple[str, ChatTurnMetadata]:
+    def _prepare_chat(
+        self,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> tuple[str, list[ChatHistoryMessage], ChatTurnMetadata]:
+        normalized_history = normalize_history(list(history or []))
         build_started_at = time.perf_counter()
         routing = self._intent_router.route(message)
         knowledge_context = self._knowledge_loader.build_prompt_context(
@@ -94,8 +124,8 @@ class ChatService:
             build_instructions_ms=build_instructions_ms,
             is_low_confidence=is_low_confidence,
         )
-        return instructions, metadata
+        return instructions, normalized_history, metadata
 
     def _build_instructions(self, message: str) -> str:
-        instructions, _metadata = self._prepare_chat(message)
+        instructions, _history, _metadata = self._prepare_chat(message)
         return instructions

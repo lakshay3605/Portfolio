@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 import asyncio
 import logging
 
@@ -7,6 +7,7 @@ from google.genai import errors as genai_errors
 from google.genai import types
 
 from app.core.config import Settings
+from app.schemas.chat import ChatHistoryMessage
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +27,39 @@ class GeminiService:
     def _build_config(self, instructions: str) -> types.GenerateContentConfig:
         return types.GenerateContentConfig(system_instruction=instructions)
 
-    async def create_response(self, *, instructions: str, user_input: str) -> str:
+    @staticmethod
+    def _build_contents(
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> list[types.Content]:
+        contents: list[types.Content] = []
+
+        for message in history or []:
+            role = "user" if message.role == "user" else "model"
+            contents.append(
+                types.Content(role=role, parts=[types.Part(text=message.content)])
+            )
+
+        contents.append(
+            types.Content(role="user", parts=[types.Part(text=user_input)])
+        )
+        return contents
+
+    async def create_response(
+        self,
+        *,
+        instructions: str,
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> str:
+        contents = self._build_contents(user_input, history)
         max_retries = 2
         for attempt in range(max_retries + 1):
             try:
                 response = await asyncio.wait_for(
                     self._client.aio.models.generate_content(
                         model=self._model,
-                        contents=user_input,
+                        contents=contents,
                         config=self._build_config(instructions),
                     ),
                     timeout=self._timeout,
@@ -72,13 +98,18 @@ class GeminiService:
         raise RuntimeError("Gemini request failed after maximum retries.")
 
     async def stream_response(
-        self, *, instructions: str, user_input: str
+        self,
+        *,
+        instructions: str,
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
     ) -> AsyncIterator[str]:
+        contents = self._build_contents(user_input, history)
         try:
             stream = await asyncio.wait_for(
                 self._client.aio.models.generate_content_stream(
                     model=self._model,
-                    contents=user_input,
+                    contents=contents,
                     config=self._build_config(instructions),
                 ),
                 timeout=self._timeout,

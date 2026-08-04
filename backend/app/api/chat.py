@@ -108,13 +108,17 @@ async def chat(
 
     try:
         logger.info("[Request ID: %s] Incoming request session_id=%s", request_id, session_id)
-        instructions, metadata = chat_service.prepare_chat(message)
+        instructions, normalized_history, metadata = chat_service.prepare_chat(
+            message,
+            payload.history,
+        )
         logger.info("[Request ID: %s] LLM started intent=%s", request_id, metadata.intent)
         llm_started_at = time.perf_counter()
 
         response_text = await chat_service.complete_prepared(
             instructions=instructions,
             message=message,
+            history=normalized_history,
         )
         llm_ms = (time.perf_counter() - llm_started_at) * 1000
         response_time_ms = (time.perf_counter() - started_at) * 1000
@@ -185,7 +189,10 @@ async def chat_stream(
 
         try:
             logger.info("[Request ID: %s] Incoming request session_id=%s", request_id, session_id)
-            instructions, metadata = chat_service.prepare_chat(message)
+            instructions, normalized_history, metadata = chat_service.prepare_chat(
+                message,
+                payload.history,
+            )
             logger.info("[Request ID: %s] LLM started intent=%s", request_id, metadata.intent)
             logger.info("[Request ID: %s] Streaming...", request_id)
             llm_started_at = time.perf_counter()
@@ -193,6 +200,7 @@ async def chat_stream(
             async for delta in chat_service.stream_prepared(
                 instructions=instructions,
                 message=message,
+                history=normalized_history,
             ):
                 chunks.append(delta)
                 yield f"data: {json.dumps({'delta': delta})}\n\n"

@@ -28,6 +28,17 @@ export interface UseChatSessionOptions {
 
 /** Ask for feedback once per session after this many completed exchanges. */
 const FEEDBACK_AFTER_TURN = 3;
+const MAX_HISTORY_MESSAGES = 12;
+
+function buildConversationHistory(messages: ChatMessage[]): Array<{ role: 'user' | 'assistant'; content: string }> {
+  return messages
+    .filter((message) => message.status === 'complete' && message.content.trim())
+    .slice(-MAX_HISTORY_MESSAGES)
+    .map((message) => ({
+      role: message.role,
+      content: message.content.trim()
+    }));
+}
 
 function createInitialMessages(welcomeMessage?: string): ChatMessage[] {
   if (!welcomeMessage) {
@@ -62,6 +73,8 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
   const sessionId = useMemo(() => getSessionId(), []);
   const abortRef = useRef<AbortController | null>(null);
   const conversationNumberRef = useRef(0);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const cancelRequest = useCallback(() => {
     abortRef.current?.abort();
@@ -85,6 +98,7 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
       conversationNumberRef.current += 1;
       const conversationNumber = conversationNumberRef.current;
       const assistantId = crypto.randomUUID();
+      const history = buildConversationHistory(messagesRef.current);
 
       if (showUserMessage) {
         setMessages((prev) => [...prev, createMessage('user', trimmed, 'complete')]);
@@ -126,7 +140,7 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
             }
           },
           controller.signal,
-          { sessionId, conversationNumber }
+          { sessionId, conversationNumber, history }
         );
 
         setMessages((prev) =>

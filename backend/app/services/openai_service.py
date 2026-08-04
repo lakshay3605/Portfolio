@@ -1,11 +1,11 @@
-from collections.abc import AsyncIterator
-
+from collections.abc import AsyncIterator, Sequence
 import logging
 
 from openai import APIConnectionError, AuthenticationError, OpenAIError, RateLimitError
 from openai import AsyncOpenAI
 
 from app.core.config import Settings
+from app.schemas.chat import ChatHistoryMessage
 
 logger = logging.getLogger(__name__)
 
@@ -28,12 +28,37 @@ class OpenAIService:
             timeout=settings.openai_timeout_seconds,
         )
 
-    async def create_response(self, *, instructions: str, user_input: str) -> str:
+    @staticmethod
+    def _build_input(
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> list[dict[str, str]] | str:
+        if not history:
+            return user_input
+
+        items: list[dict[str, str]] = []
+        for message in history:
+            items.append(
+                {
+                    "role": message.role,
+                    "content": message.content,
+                }
+            )
+        items.append({"role": "user", "content": user_input})
+        return items
+
+    async def create_response(
+        self,
+        *,
+        instructions: str,
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> str:
         try:
             response = await self._client.responses.create(
                 model=self._settings.openai_model,
                 instructions=instructions,
-                input=user_input,
+                input=self._build_input(user_input, history),
             )
         except AuthenticationError as exc:
             logger.exception("OpenAI authentication failed")
@@ -61,13 +86,17 @@ class OpenAIService:
         return output_text
 
     async def stream_response(
-        self, *, instructions: str, user_input: str
+        self,
+        *,
+        instructions: str,
+        user_input: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
     ) -> AsyncIterator[str]:
         try:
             async with self._client.responses.stream(
                 model=self._settings.openai_model,
                 instructions=instructions,
-                input=user_input,
+                input=self._build_input(user_input, history),
             ) as stream:
                 async for event in stream:
                     if event.type == "response.output_text.delta":
