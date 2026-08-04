@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
     openai_timeout_seconds: float = Field(default=60.0, alias="OPENAI_TIMEOUT_SECONDS")
 
+    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
+    openrouter_model: str = Field(default="google/gemini-2.5-flash", alias="OPENROUTER_MODEL")
+    openrouter_base_url: str = Field(default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL")
+    openrouter_site_url: str = Field(default="https://www.lakshay.website", alias="OPENROUTER_SITE_URL")
+    openrouter_app_name: str = Field(default="Lakshay.ai", alias="OPENROUTER_APP_NAME")
+    openrouter_timeout_seconds: float = Field(default=60.0, alias="OPENROUTER_TIMEOUT_SECONDS")
+    llm_fallback_provider: str = Field(default="openrouter", alias="LLM_FALLBACK_PROVIDER")
+
     cors_origins: str = Field(
         default="http://localhost:3000",
         validation_alias=AliasChoices("CORS_ORIGINS", "CORS_ORIGIN"),
@@ -53,8 +61,14 @@ class Settings(BaseSettings):
         self.llm_provider = self.llm_provider.strip().lower()
         self.gemini_model = self.gemini_model.strip()
         self.openai_model = self.openai_model.strip()
+        self.openrouter_model = self.openrouter_model.strip()
+        self.openrouter_base_url = self.openrouter_base_url.strip().rstrip("/")
+        self.openrouter_site_url = self.openrouter_site_url.strip().rstrip("/")
+        self.openrouter_app_name = self.openrouter_app_name.strip()
+        self.llm_fallback_provider = self.llm_fallback_provider.strip().lower()
         self.gemini_api_key = self.gemini_api_key.strip()
         self.openai_api_key = self.openai_api_key.strip()
+        self.openrouter_api_key = self.openrouter_api_key.strip()
         self.supabase_url = self.supabase_url.strip()
         self.supabase_service_role_key = self.supabase_service_role_key.strip()
 
@@ -80,6 +94,22 @@ class Settings(BaseSettings):
     @property
     def is_development(self) -> bool:
         return self.app_env.lower() in {"development", "dev", "local"}
+
+    @property
+    def has_openrouter_fallback(self) -> bool:
+        return (
+            self.llm_provider == "gemini"
+            and self.llm_fallback_provider == "openrouter"
+            and bool(self.openrouter_api_key)
+        )
+
+    def llm_is_configured(self) -> bool:
+        provider = self.llm_provider
+        if provider == "gemini":
+            return bool(self.resolved_gemini_api_key) or bool(self.openrouter_api_key)
+        if provider == "openrouter":
+            return bool(self.openrouter_api_key)
+        return bool(self.openai_api_key)
 
 
 @lru_cache

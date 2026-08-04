@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.dependencies import get_analytics_store, get_knowledge_loader, get_prompt_service
 from app.api.router import api_router
 from app.core.config import get_settings
-from app.services.llm_factory import create_llm_service
+from app.services.llm_factory import create_llm_service, resolve_llm_model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,11 +22,7 @@ async def lifespan(app: FastAPI):
     get_settings.cache_clear()
     settings = get_settings()
     llm = create_llm_service(settings)
-    model = (
-        settings.gemini_model
-        if settings.llm_provider == "gemini"
-        else settings.openai_model
-    )
+    model = resolve_llm_model(settings)
 
     prompt_service = get_prompt_service()
     knowledge_loader = get_knowledge_loader()
@@ -39,10 +35,23 @@ async def lifespan(app: FastAPI):
             for name, value in (
                 ("SUPABASE_URL", settings.supabase_url),
                 ("SUPABASE_SERVICE_ROLE_KEY", settings.supabase_service_role_key),
-                ("GEMINI_API_KEY", settings.resolved_gemini_api_key),
             )
             if not str(value).strip()
         ]
+
+        if settings.llm_provider == "gemini" and not settings.resolved_gemini_api_key:
+            missing.append("GEMINI_API_KEY")
+        elif settings.llm_provider == "openrouter" and not settings.openrouter_api_key:
+            missing.append("OPENROUTER_API_KEY")
+        elif settings.llm_provider == "openai" and not settings.openai_api_key:
+            missing.append("OPENAI_API_KEY")
+
+        if settings.llm_fallback_provider == "openrouter" and not settings.openrouter_api_key:
+            logger.warning(
+                "LLM fallback is enabled but OPENROUTER_API_KEY is missing. "
+                "Gemini quota errors will not fail over to OpenRouter."
+            )
+
         if missing:
             raise RuntimeError(
                 f"Missing required production environment variables: {', '.join(missing)}"
@@ -59,6 +68,7 @@ async def lifespan(app: FastAPI):
         "Environment: %s\n"
         "LLM Provider: %s\n"
         "Gemini Model: %s\n"
+        "OpenRouter Fallback: %s\n"
         "Knowledge files loaded: %d\n"
         "Supabase: %s\n"
         "CORS Origins:\n%s\n"
@@ -66,6 +76,7 @@ async def lifespan(app: FastAPI):
         settings.app_env,
         settings.llm_provider.title(),
         model,
+        "Enabled" if settings.has_openrouter_fallback else "Disabled",
         len(docs),
         supabase_status,
         origins_formatted,
@@ -110,6 +121,7 @@ def create_app() -> FastAPI:
         return {
             "status": "healthy",
             "llm": active.llm_provider,
+            "llm_fallback": "openrouter" if active.has_openrouter_fallback else "none",
             "analytics": "connected" if has_supabase else "in_memory",
             "version": active.app_version,
         }
@@ -119,7 +131,7 @@ def create_app() -> FastAPI:
         active = get_settings()
         knowledge_loader = get_knowledge_loader()
 
-        llm_ready = bool(active.resolved_gemini_api_key) if active.llm_provider == "gemini" else bool(active.openai_api_key)
+        llm_ready = active.llm_is_configured()
         supabase_ready = bool(active.supabase_url.strip() and active.supabase_service_role_key.strip()) if active.is_production else True
         knowledge_ready = len(knowledge_loader.load_all()) > 0
 
