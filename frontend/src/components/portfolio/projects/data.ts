@@ -2,6 +2,28 @@ import type { ProjectData } from './types';
 
 export const FEATURED_PROJECTS: ProjectData[] = [
   {
+    id: 'jagrukmahila',
+    status: {
+      emoji: '✅',
+      label: 'Live',
+      description: 'This project is completed and publicly available.',
+      variant: 'live'
+    },
+    title: 'jagrukmahila.in',
+    description:
+      'An AI-powered legal awareness platform developed under an ICSSR-sponsored research initiative to make legal information more accessible.',
+    media: {
+      type: 'video',
+      src: '/projects/jagrukmahila-preview.mp4',
+      alt: 'jagrukmahila.in website preview'
+    },
+    technologies: ['Gemini', 'AI Chatbot', 'Next.js', 'Node.js'],
+    layout: 'text-left',
+    liveUrl: 'https://jagrukmahila.in',
+    hideGithub: true,
+    aiExplainPrompt: 'Explain the jagrukmahila.in project in detail.'
+  },
+  {
     id: 'business-intelligence-assistant',
     status: {
       emoji: '🚧',
@@ -33,23 +55,6 @@ export const FEATURED_PROJECTS: ProjectData[] = [
     technologies: ['LangGraph', 'MCP', 'FastAPI', 'Tool Calling'],
     layout: 'text-right',
     aiExplainPrompt: 'Explain the Multi-Tool AI Agent project in detail.'
-  },
-  {
-    id: 'jagrukmahila',
-    status: {
-      emoji: '✅',
-      label: 'Live',
-      description: 'This project is completed and publicly available.',
-      variant: 'live'
-    },
-    title: 'jagrukmahila.in',
-    description:
-      'An AI-powered legal awareness platform developed under an ICSSR-sponsored research initiative to make legal information more accessible.',
-    media: { type: 'placeholder', alt: 'jagrukmahila.in website preview' },
-    technologies: ['Gemini', 'AI Chatbot', 'Next.js', 'Node.js'],
-    layout: 'text-left',
-    liveUrl: 'https://jagrukmahila.in',
-    aiExplainPrompt: 'Explain the jagrukmahila.in project in detail.'
   }
 ];
 

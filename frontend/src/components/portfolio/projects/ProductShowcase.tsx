@@ -62,23 +62,24 @@ export function ProductShowcase({ project, className }: ProductShowcaseProps) {
         </div>
 
         <div className="proj-links">
-          {project.githubUrl ? (
-            <a
-              href={project.githubUrl}
-              className="gh"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`View ${project.title} on GitHub`}
-            >
-              <GithubIcon className="h-4 w-4" />
-              GitHub
-            </a>
-          ) : (
-            <span className="gh opacity-40 cursor-not-allowed">
-              <GithubIcon className="h-4 w-4" />
-              GitHub
-            </span>
-          )}
+          {!project.hideGithub &&
+            (project.githubUrl ? (
+              <a
+                href={project.githubUrl}
+                className="gh"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View ${project.title} on GitHub`}
+              >
+                <GithubIcon className="h-4 w-4" />
+                GitHub
+              </a>
+            ) : (
+              <span className="gh opacity-40 cursor-not-allowed">
+                <GithubIcon className="h-4 w-4" />
+                GitHub
+              </span>
+            ))}
 
           <button
             type="button"
@@ -93,7 +94,17 @@ export function ProductShowcase({ project, className }: ProductShowcaseProps) {
       </div>
 
       <div className="proj-preview">
-        {project.media.type === 'image' && project.media.src ? (
+        {project.media.type === 'video' && project.media.src ? (
+          <video
+            src={project.media.src}
+            poster={project.media.poster}
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-label={project.media.alt ?? `${project.title} preview`}
+          />
+        ) : project.media.type === 'image' && project.media.src ? (
           <img
             src={project.media.src}
             alt={project.media.alt ?? `${project.title} preview`}

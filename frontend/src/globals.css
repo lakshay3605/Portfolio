@@ -931,10 +931,12 @@ html {
   width: 100%;
 }
 
-.proj-preview img {
+.proj-preview img,
+.proj-preview video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .proj-preview .label {
@@ -964,15 +966,15 @@ html {
 }
 
 .project-card:nth-child(1) .proj-preview::before {
-  background: linear-gradient(180deg, #facc15, transparent);
+  background: linear-gradient(180deg, var(--mint), transparent);
 }
 
 .project-card:nth-child(2) .proj-preview::before {
-  background: linear-gradient(180deg, #60a5fa, transparent);
+  background: linear-gradient(180deg, #facc15, transparent);
 }
 
 .project-card:nth-child(3) .proj-preview::before {
-  background: linear-gradient(180deg, var(--mint), transparent);
+  background: linear-gradient(180deg, #60a5fa, transparent);
 }
 
 /* ============ EXPERIENCE ============ */
