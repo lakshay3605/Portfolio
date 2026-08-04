@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { requestPortfolioChatOpen } from '@/lib/session';
 import { BackgroundEffects } from './BackgroundEffects';
 import { GlassPanel } from './GlassPanel';
 import { GlowButton } from './GlowButton';
@@ -192,7 +193,10 @@ export function BootScreen() {
                     >
                       <GlowButton
                         aria-label="Start a conversation with Lakshay's AI Twin"
-                        onClick={() => router.push('/portfolio?ai=open')}
+                        onClick={() => {
+                          requestPortfolioChatOpen();
+                          router.push('/portfolio');
+                        }}
                       >
                         Start Conversation
                       </GlowButton>

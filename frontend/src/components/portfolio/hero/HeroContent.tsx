@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
-import { useFloatingAssistant } from '@/components/ai-chat/FloatingAssistantProvider';
 import { heroReveal, staggerContainer } from '@/lib/motion';
 import { cn } from '@/lib/cn';
 import { HERO_DESCRIPTION, HERO_GREETING, HERO_HEADLINE, HERO_OVERLINE } from './constants';
@@ -17,7 +16,6 @@ export interface HeroContentProps {
 
 export function HeroContent({ className }: HeroContentProps) {
   const prefersReducedMotion = useReducedMotion();
-  const { open } = useFloatingAssistant();
 
   return (
     <motion.div

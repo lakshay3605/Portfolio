@@ -1,13 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { cn } from '@/lib/cn';
+import { handlePortfolioNavClick } from '@/lib/portfolio-navigation';
 
 const NAV_ITEMS = [
-  { label: 'About', href: '#about' },
+  { label: 'About', href: '#hero' },
   { label: 'Projects', href: '#projects' },
   { label: 'Experience', href: '#experience' },
   { label: 'Leadership', href: '#leadership' },
@@ -40,23 +40,24 @@ export function Navigation() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 transition-all duration-300">
       <nav className={cn('nav', scrolled && 'scrolled')} aria-label="Primary navigation">
-        <Link
+        <a
           href="#hero"
           className="logo focus-visible:outline-none"
-          onClick={() => setMobileOpen(false)}
+          onClick={(event) => handlePortfolioNavClick(event, '#hero', () => setMobileOpen(false))}
         >
           <span className="bracket">&lt;</span>Lakshay<span className="dot">.ai</span><span className="bracket">/&gt;</span>
-        </Link>
+        </a>
 
         <ul className="nav-links hidden lg:flex" role="list">
           {NAV_ITEMS.map((item) => (
             <li key={item.href}>
-              <Link
+              <a
                 href={item.href}
                 className="focus-visible:outline-none"
+                onClick={(event) => handlePortfolioNavClick(event, item.href)}
               >
                 {item.label}
-              </Link>
+              </a>
             </li>
           ))}
         </ul>
@@ -84,13 +85,15 @@ export function Navigation() {
           <ul className="flex flex-col gap-1" role="list">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
-                <Link
+                <a
                   href={item.href}
                   className="block rounded-button px-3 py-3 text-base text-text-secondary transition-colors hover:bg-hover hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(event) =>
+                    handlePortfolioNavClick(event, item.href, () => setMobileOpen(false))
+                  }
                 >
                   {item.label}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>

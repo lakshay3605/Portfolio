@@ -2,7 +2,6 @@
 
 import {
   createContext,
-  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -11,8 +10,11 @@ import {
   useState,
   type ReactNode
 } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { isWelcomeAutoOpenHandled, markWelcomeAutoOpenHandled } from '@/lib/session';
+import {
+  consumePortfolioChatOpenRequest,
+  markWelcomeAutoOpenHandled
+} from '@/lib/session';
+import { stripAiOpenQueryParam } from '@/lib/portfolio-navigation';
 
 interface FloatingAssistantContextValue {
   isOpen: boolean;
@@ -35,40 +37,28 @@ export function useFloatingAssistant(): FloatingAssistantContextValue {
   return context;
 }
 
-function FloatingAssistantAutoOpen() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+function PortfolioChatAutoOpen() {
   const { open } = useFloatingAssistant();
+  const hasHandledRef = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get('ai') !== 'open') {
+    if (hasHandledRef.current) {
+      return;
+    }
+
+    hasHandledRef.current = true;
+
+    const url = new URL(window.location.href);
+    const legacyAiOpen = url.searchParams.get('ai') === 'open';
+    stripAiOpenQueryParam();
+
+    if (!legacyAiOpen && !consumePortfolioChatOpenRequest()) {
       return;
     }
 
     markWelcomeAutoOpenHandled();
     open();
-    router.replace('/portfolio', { scroll: false });
-  }, [open, router, searchParams]);
-
-  return null;
-}
-
-function PortfolioWelcomeAutoOpen() {
-  const searchParams = useSearchParams();
-  const { open } = useFloatingAssistant();
-
-  useEffect(() => {
-    if (searchParams.get('ai') === 'open') {
-      return;
-    }
-
-    if (isWelcomeAutoOpenHandled()) {
-      return;
-    }
-
-    markWelcomeAutoOpenHandled();
-    open();
-  }, [open, searchParams]);
+  }, [open]);
 
   return null;
 }
@@ -127,10 +117,7 @@ export function FloatingAssistantProvider({ children }: { children: ReactNode })
 
   return (
     <FloatingAssistantContext.Provider value={value}>
-      <Suspense fallback={null}>
-        <FloatingAssistantAutoOpen />
-        <PortfolioWelcomeAutoOpen />
-      </Suspense>
+      <PortfolioChatAutoOpen />
       {children}
     </FloatingAssistantContext.Provider>
   );

@@ -12,7 +12,8 @@ const EXPERIENCES = [
       'Have a conversation with my AI twin. Ask about projects, experience, leadership, technical decisions, and interview questions.',
     estimatedTime: '10–15 minutes',
     ctaLabel: 'Enter AI Experience',
-    href: '/portfolio?ai=open',
+    href: '/portfolio',
+    openChat: true,
     accent: 'cyan' as const
   },
   {
@@ -67,7 +68,7 @@ export function ExperienceSelection() {
             aria-label="Experience options"
           >
             {EXPERIENCES.map((experience, index) => (
-              <div key={experience.href} role="listitem">
+              <div key={experience.title} role="listitem">
                 <ExperienceCard {...experience} delay={0.15 + index * 0.12} />
               </div>
             ))}

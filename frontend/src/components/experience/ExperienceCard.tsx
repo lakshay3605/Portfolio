@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { requestPortfolioChatOpen } from '@/lib/session';
 
 export interface ExperienceCardProps {
   icon: string;
@@ -11,6 +12,7 @@ export interface ExperienceCardProps {
   estimatedTime: string;
   ctaLabel: string;
   href: string;
+  openChat?: boolean;
   accent?: 'cyan' | 'violet';
   delay?: number;
 }
@@ -44,6 +46,7 @@ export function ExperienceCard({
   estimatedTime,
   ctaLabel,
   href,
+  openChat = false,
   accent = 'cyan',
   delay = 0
 }: ExperienceCardProps) {
@@ -59,6 +62,11 @@ export function ExperienceCard({
     >
       <Link
         href={href}
+        onClick={() => {
+          if (openChat) {
+            requestPortfolioChatOpen();
+          }
+        }}
         className={`group relative flex h-full flex-col rounded-[20px] border border-white/10 bg-boot-glass-bg p-6 shadow-boot-glass backdrop-blur-xl transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-boot-bg group-hover:-translate-y-1 sm:p-8 ${styles.hoverBorder} ${styles.hoverGlow}`}
         aria-label={`${title}. ${description} Estimated time: ${estimatedTime}.`}
       >
