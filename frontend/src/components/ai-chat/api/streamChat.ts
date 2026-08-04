@@ -32,10 +32,6 @@ export async function streamChatMessage(
   signal?: AbortSignal,
   options?: StreamChatOptions
 ): Promise<void> {
-  if (!AI_API_BASE_URL) {
-    throw new Error('AI backend URL is not configured.');
-  }
-
   const response = await fetch(`${AI_API_BASE_URL}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -49,7 +45,20 @@ export async function streamChatMessage(
 
   if (!response.ok) {
     const detail = await response.text().catch(() => response.statusText);
-    throw new Error(detail || `Request failed (${response.status})`);
+    let message = detail || `Request failed (${response.status})`;
+
+    try {
+      const parsed = JSON.parse(detail) as { detail?: string | { msg?: string }[] };
+      if (typeof parsed.detail === 'string') {
+        message = parsed.detail;
+      } else if (Array.isArray(parsed.detail) && parsed.detail[0]?.msg) {
+        message = parsed.detail[0].msg;
+      }
+    } catch {
+      // Keep raw response text when it is not JSON.
+    }
+
+    throw new Error(message);
   }
 
   if (!response.body) {

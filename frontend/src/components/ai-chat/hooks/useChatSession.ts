@@ -134,13 +134,16 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
         );
         setPhase('idle');
         setShowFeedback(true);
-      } catch {
+      } catch (error) {
         if (controller.signal.aborted) {
           setPhase('idle');
           return;
         }
 
-        const errorMessage = FRIENDLY_ERROR_MESSAGE;
+        const errorMessage =
+          error instanceof Error && error.message.trim()
+            ? error.message.trim()
+            : FRIENDLY_ERROR_MESSAGE;
 
         if (!assistantStarted) {
           setMessages((prev) => [...prev, createMessage('assistant', errorMessage, 'complete')]);
