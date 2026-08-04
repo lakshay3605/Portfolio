@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { getSessionId } from '@/lib/session';
+import { getSessionId, isFeedbackPromptHandled, markFeedbackPromptHandled } from '@/lib/session';
 import { streamChatMessage } from '../api/streamChat';
 import { FRIENDLY_ERROR_MESSAGE } from '../constants';
 import type { ChatMessage, ChatPhase } from '../types';
@@ -25,6 +25,9 @@ function createMessage(
 export interface UseChatSessionOptions {
   welcomeMessage?: string;
 }
+
+/** Ask for feedback once per session after this many completed exchanges. */
+const FEEDBACK_AFTER_TURN = 3;
 
 function createInitialMessages(welcomeMessage?: string): ChatMessage[] {
   if (!welcomeMessage) {
@@ -67,6 +70,7 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
 
   const dismissFeedback = useCallback(() => {
     setShowFeedback(false);
+    markFeedbackPromptHandled();
   }, []);
 
   const runAssistantTurn = useCallback(
@@ -133,7 +137,10 @@ export function useChatSession(options?: UseChatSessionOptions): ChatSession {
           )
         );
         setPhase('idle');
-        setShowFeedback(true);
+        if (conversationNumber >= FEEDBACK_AFTER_TURN && !isFeedbackPromptHandled()) {
+          setShowFeedback(true);
+          markFeedbackPromptHandled();
+        }
       } catch (error) {
         if (controller.signal.aborted) {
           setPhase('idle');

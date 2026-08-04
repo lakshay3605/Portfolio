@@ -1,6 +1,7 @@
 const SESSION_STORAGE_KEY = 'lakshay_ai_session_id';
 const WELCOME_AUTO_OPEN_KEY = 'lakshay_ai_welcome_auto_open_handled';
 const PORTFOLIO_CHAT_OPEN_KEY = 'lakshay_ai_open_on_portfolio';
+const FEEDBACK_PROMPT_KEY = 'lakshay_ai_feedback_prompt_handled';
 
 export function isWelcomeAutoOpenHandled(): boolean {
   if (typeof window === 'undefined') {
@@ -37,6 +38,22 @@ export function consumePortfolioChatOpenRequest(): boolean {
   }
 
   return shouldOpen;
+}
+
+export function isFeedbackPromptHandled(): boolean {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  return window.sessionStorage.getItem(FEEDBACK_PROMPT_KEY) === '1';
+}
+
+export function markFeedbackPromptHandled(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.sessionStorage.setItem(FEEDBACK_PROMPT_KEY, '1');
 }
 
 export function getSessionId(): string {
