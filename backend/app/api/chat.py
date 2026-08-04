@@ -106,6 +106,16 @@ async def chat(
     conversation_number = payload.conversation_number or 1
     started_at = time.perf_counter()
 
+    scope = chat_service.check_scope(message, payload.history)
+    if not scope.allowed:
+        logger.info(
+            "[Request ID: %s] Out-of-scope request blocked reason=%s session_id=%s",
+            request_id,
+            scope.reason,
+            session_id,
+        )
+        return ChatResponse(response=scope.refusal_message or chat_service.refusal_message())
+
     try:
         logger.info("[Request ID: %s] Incoming request session_id=%s", request_id, session_id)
         instructions, normalized_history, metadata = chat_service.prepare_chat(
@@ -181,11 +191,38 @@ async def chat_stream(
 
     session_id = _resolve_session_id(payload.session_id)
     conversation_number = payload.conversation_number or 1
+    scope = chat_service.check_scope(message, payload.history)
 
     async def event_generator():
         started_at = time.perf_counter()
         chunks: list[str] = []
         metadata: ChatTurnMetadata | None = None
+
+        if not scope.allowed:
+            refusal = scope.refusal_message or chat_service.refusal_message()
+            logger.info(
+                "[Request ID: %s] Out-of-scope request blocked reason=%s session_id=%s",
+                request_id,
+                scope.reason,
+                session_id,
+            )
+            yield f"data: {json.dumps({'delta': refusal})}\n\n"
+            meta_payload = {
+                "intent": "OutOfScope",
+                "confidence": 1.0,
+                "knowledge_docs_used": [],
+                "build_instructions_ms": 0.0,
+                "is_low_confidence": False,
+                "response_time_ms": round((time.perf_counter() - started_at) * 1000, 2),
+                "llm_ms": 0.0,
+                "tokens_generated": max(1, len(refusal) // 4),
+                "documents_retrieved": 0,
+                "session_id": session_id,
+                "conversation_number": conversation_number,
+            }
+            yield f"data: {json.dumps({'meta': meta_payload})}\n\n"
+            yield "data: [DONE]\n\n"
+            return
 
         try:
             logger.info("[Request ID: %s] Incoming request session_id=%s", request_id, session_id)

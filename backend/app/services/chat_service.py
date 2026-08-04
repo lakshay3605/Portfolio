@@ -10,6 +10,7 @@ from app.services.intent_router import IntentRouterProtocol
 from app.services.knowledge_loader import KnowledgeLoader
 from app.services.llm_service import LLMService
 from app.services.prompt_builder import PromptBuilder
+from app.services.topic_guard import REFUSAL_MESSAGE, TopicGuard, TopicGuardResult
 
 LOW_CONFIDENCE_THRESHOLD = 0.35
 
@@ -32,6 +33,18 @@ class ChatService:
         self._prompt_builder = prompt_builder
         self._knowledge_loader = knowledge_loader
         self._intent_router = intent_router
+        self._topic_guard = TopicGuard(intent_router)
+
+    def check_scope(
+        self,
+        message: str,
+        history: Sequence[ChatHistoryMessage] | None = None,
+    ) -> TopicGuardResult:
+        return self._topic_guard.check(message, history)
+
+    @staticmethod
+    def refusal_message() -> str:
+        return REFUSAL_MESSAGE
 
     def prepare_chat(
         self,
