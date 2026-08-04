@@ -24,22 +24,6 @@ export const FEATURED_PROJECTS: ProjectData[] = [
     aiExplainPrompt: 'Explain the jagrukmahila.in project in detail.'
   },
   {
-    id: 'business-intelligence-assistant',
-    status: {
-      emoji: '🚧',
-      label: 'Under Development',
-      description: 'This project is actively being built.',
-      variant: 'under-development'
-    },
-    title: 'Business Intelligence Assistant',
-    description:
-      'An AI-powered business intelligence platform that transforms complex business data into meaningful insights using intelligent AI workflows.',
-    media: { type: 'placeholder', alt: 'Business Intelligence Assistant product preview' },
-    technologies: ['LLMs', 'RAG', 'FastAPI', 'Agentic AI'],
-    layout: 'text-left',
-    aiExplainPrompt: 'Explain the Business Intelligence Assistant project in detail.'
-  },
-  {
     id: 'multi-tool-ai-agent',
     status: {
       emoji: '📝',
@@ -55,6 +39,22 @@ export const FEATURED_PROJECTS: ProjectData[] = [
     technologies: ['LangGraph', 'MCP', 'FastAPI', 'Tool Calling'],
     layout: 'text-right',
     aiExplainPrompt: 'Explain the Multi-Tool AI Agent project in detail.'
+  },
+  {
+    id: 'business-intelligence-assistant',
+    status: {
+      emoji: '🚧',
+      label: 'Under Development',
+      description: 'This project is actively being built.',
+      variant: 'under-development'
+    },
+    title: 'Business Intelligence Assistant',
+    description:
+      'An AI-powered business intelligence platform that transforms complex business data into meaningful insights using intelligent AI workflows.',
+    media: { type: 'placeholder', alt: 'Business Intelligence Assistant product preview' },
+    technologies: ['LLMs', 'RAG', 'FastAPI', 'Agentic AI'],
+    layout: 'text-left',
+    aiExplainPrompt: 'Explain the Business Intelligence Assistant project in detail.'
   }
 ];
 

@@ -970,11 +970,11 @@ html {
 }
 
 .project-card:nth-child(2) .proj-preview::before {
-  background: linear-gradient(180deg, #facc15, transparent);
+  background: linear-gradient(180deg, #60a5fa, transparent);
 }
 
 .project-card:nth-child(3) .proj-preview::before {
-  background: linear-gradient(180deg, #60a5fa, transparent);
+  background: linear-gradient(180deg, #facc15, transparent);
 }
 
 /* ============ EXPERIENCE ============ */
